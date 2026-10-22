@@ -1,0 +1,21 @@
+{
+  "name": "tts-lnx-browser",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Firefox-extensie die webpagina's voorleest met natuurlijke stemmen",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "vitest run",
+    "lint": "web-ext lint --source-dir dist",
+    "start": "web-ext run --source-dir dist",
+    "package": "web-ext build --source-dir dist --artifacts-dir web-ext-artifacts"
+  },
+  "devDependencies": {
+    "@mozilla/readability": "^0.5.0",
+    "esbuild": "^0.21.5",
+    "jsdom": "^24.1.0",
+    "vitest": "^2.1.0",
+    "web-ext": "^8.3.0"
+  }
+}
