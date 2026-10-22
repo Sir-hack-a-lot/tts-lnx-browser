@@ -57,7 +57,7 @@ tests/fixtures/edge-frames.js — helpers om protocol-frames te bouwen
 - `VOICES: Record<string, string[]>`, `resolveVoice(lang, voiceOverrides): string` — shared/voices.js (Task 3)
 - `generateConnectionId(): string`, `computeSecMsGec(nowMs): Promise<string>`, `buildWssUrl({connectionId, secMsGec}): string`, `buildConfigMessage(): string`, `buildSsmlMessage({text, voice, ratePct, requestId}): string`, `rateToPct(rate): string`, `parseBinaryFrame(buf): {path, payload: Uint8Array}`, `parseTextFrame(str): {path, body}`, `extractWordBoundaries(jsonBody): [{text, offsetMs, durationMs}]` — background/engines/edge-protocol.js (Task 4)
 - `createEdgeEngine({WebSocketImpl?, timeoutMs?, now?}): {name:'edge', isLocal:false, available(): Promise<boolean>, synthesize({text, voice, rate}): Promise<{audio: Blob, boundaries: [{text, offsetMs, durationMs}]}>}` — Task 5. **De Piper-helper (fase 2) implementeert exact deze engine-interface.**
-- `extractArticle(doc, {maxSentences?}): {title: string|null, sentences: [{id: number, text: string}]}` en `locateSentence(doc, sentenceText, {fromNode?}): [{node: Text, start: number, end: number}]|null` — content/extractor.js (Task 6)
+- `extractArticle(doc, {maxSentences?}): {title: string|null, sentences: [{id: number, text: string}]}` en `locateSentence(doc, sentenceText, {fromNode?, fromOffset?}): [{node: Text, start: number, end: number}]|null` — `fromOffset` is de ruwe offset in `fromNode` vanaf waar gezocht wordt (nodig bij herhaalde zinnen in dezelfde tekstnode) — content/extractor.js (Task 6)
 - `createHighlighter(doc): {setSentence(segments): void, highlightWord(wordText, fromPos): number, clear(): void}` — content/highlighter.js (Task 7)
 - `createSettings(storage): {load(): Promise<object>, get(key), set(patch): Promise<object>}` met `DEFAULTS = {rate: 1, enginePref: 'cloud', voiceOverrides: {}}` — shared/settings.js (Task 8)
 - `createPlayer({engine, audio, onEvent, setIntervalImpl?, clearIntervalImpl?, progressMs?}): {start({sentences, voice, rate}), pause(), resume(), stop(), seek(i), setRate(r), currentIndex(): number}` — background/player.js (Task 9). Events via `onEvent`: `{type:'sentence-start', index, boundaries}`, `{type:'sentence-end', index}`, `{type:'progress', index, elapsedMs}`, `{type:'end'}`, `{type:'error', message}`, `{type:'state', state}`. De `audio`-adapter heeft: `play(blob): Promise<void>` (resolveert bij einde), `pause()`, `resume()`, `stop()`, `currentTimeMs(): number`.
@@ -960,7 +960,7 @@ Readability-extractie naar een zinnenlijst, plus `locateSentence()` die een zin 
 **Interfaces:**
 - Consumes: `splitSentences` (Task 2).
 - Produces: `extractArticle(doc, {maxSentences = 500}): {title: string|null, sentences: [{id: number, text: string}]}`
-- Produces: `locateSentence(doc, sentenceText, {fromNode = null}): [{node: Text, start: number, end: number}] | null`
+- Produces: `locateSentence(doc, sentenceText, {fromNode = null, fromOffset = 0}): [{node: Text, start: number, end: number}] | null` — `fromOffset` is de ruwe offset in `fromNode` vanaf waar gezocht wordt (nodig bij herhaalde zinnen in dezelfde tekstnode)
 
 - [ ] **Step 1: Maak de fixture en schrijf de falende tests**
 
@@ -1038,9 +1038,12 @@ describe('locateSentence', () => {
     expect(joined).toBe('De muis rende hard weg.');
   });
 
-  it('respecteert fromNode bij herhaalde zinnen', () => {
+  it('respecteert fromNode/fromOffset bij herhaalde zinnen', () => {
     const first = locateSentence(document, 'Herhaling komt voor.');
-    const second = locateSentence(document, 'Herhaling komt voor.', { fromNode: first[0].node });
+    const second = locateSentence(document, 'Herhaling komt voor.', {
+      fromNode: first[0].node,
+      fromOffset: first[0].end,
+    });
     expect(second[0].start).toBeGreaterThan(first[0].start);
   });
 
@@ -1120,7 +1123,7 @@ function normalizeWithMap(raw) {
   return { text, map };
 }
 
-export function locateSentence(doc, sentenceText, { fromNode = null } = {}) {
+export function locateSentence(doc, sentenceText, { fromNode = null, fromOffset = 0 } = {}) {
   const target = String(sentenceText).replace(/\s+/g, ' ').trim();
   if (!target || !doc.body) return null;
 
@@ -1133,12 +1136,15 @@ export function locateSentence(doc, sentenceText, { fromNode = null } = {}) {
   const startIdx = fromNode ? Math.max(0, nodes.indexOf(fromNode)) : 0;
 
   // Groeiende haystack van genormaliseerde node-teksten, gescheiden door één spatie.
-  const items = []; // {node, norm, map, base}
+  const items = []; // {node, norm, map, base, sliceAt}
   let hay = '';
   for (let i = startIdx; i < nodes.length; i++) {
-    const { text, map } = normalizeWithMap(nodes[i].nodeValue);
+    // Bij de fromNode beginnen we ná fromOffset (ruwe offset in die node),
+    // zodat herhaalde zinnen in dezelfde tekstnode correct doorgeschakeld worden.
+    const sliceAt = nodes[i] === fromNode ? fromOffset : 0;
+    const { text, map } = normalizeWithMap(nodes[i].nodeValue.slice(sliceAt));
     if (!text) continue;
-    items.push({ node: nodes[i], norm: text, map, base: hay ? hay.length + 1 : 0 });
+    items.push({ node: nodes[i], norm: text, map, sliceAt, base: hay ? hay.length + 1 : 0 });
     hay = hay ? `${hay} ${text}` : text;
     const hit = hay.indexOf(target);
     if (hit === -1) continue;
@@ -1150,8 +1156,8 @@ export function locateSentence(doc, sentenceText, { fromNode = null } = {}) {
       if (s < e) {
         segments.push({
           node: item.node,
-          start: item.map[s - item.base],
-          end: item.map[e - 1 - item.base] + 1,
+          start: item.map[s - item.base] + item.sliceAt,
+          end: item.map[e - 1 - item.base] + 1 + item.sliceAt,
         });
       }
     }
@@ -2100,8 +2106,16 @@ function fakeStorage(initial = {}) {
 }
 
 beforeEach(() => {
+  // De rate-select heeft zijn opties nodig; anders heeft .value zetten geen effect.
   document.body.innerHTML = `
-    <select id="rate"></select>
+    <select id="rate">
+      <option value="0.5">0,5×</option>
+      <option value="0.75">0,75×</option>
+      <option value="1">1×</option>
+      <option value="1.25">1,25×</option>
+      <option value="1.5">1,5×</option>
+      <option value="2">2×</option>
+    </select>
     <div id="voices"></div>
     <input type="radio" name="pref" value="cloud">
     <p id="saved" hidden>Opgeslagen ✓</p>`;
@@ -2302,14 +2316,13 @@ import { extractArticle, locateSentence } from './extractor.js';
 import { detectLanguage } from './language-detect.js';
 import { createHighlighter, HIGHLIGHT_CSS } from './highlighter.js';
 import { createPlayerBar } from './playerbar.js';
-import { splitSentences } from './sentence-split.js';
 
 let active = false;
 let sentences = [];
 let highlighter = null;
 let bar = null;
 let styleEl = null;
-let lastNode = null;       // laatste gelokaliseerde tekstnode (zoekpointer)
+let lastPos = { node: null, end: 0 }; // zoekpointer: laatste gelokaliseerde positie
 let currentBoundaries = [];
 let wordPos = 0;
 let lastWordIndex = -1;
@@ -2334,7 +2347,7 @@ function cleanup() {
   styleEl?.remove();
   styleEl = null;
   sentences = [];
-  lastNode = null;
+  lastPos = { node: null, end: 0 };
   currentBoundaries = [];
   wordPos = 0;
   lastWordIndex = -1;
@@ -2375,10 +2388,10 @@ function onSentenceStart(event) {
   highlighter?.clear();
   const sentence = sentences[event.index];
   if (!sentence) return;
-  const segs = locateSentence(document, sentence.text, { fromNode: lastNode });
+  const segs = locateSentence(document, sentence.text, { fromNode: lastPos.node, fromOffset: lastPos.end });
   if (!segs) return; // anker niet gevonden: doorspelen zonder highlight
   highlighter.setSentence(segs);
-  lastNode = segs[segs.length - 1].node;
+  lastPos = { node: segs[segs.length - 1].node, end: segs[segs.length - 1].end };
   segs[0].node.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -2432,7 +2445,7 @@ browser.runtime.onMessage.addListener((msg) => {
 });
 ```
 
-Merk op: `splitSentences` wordt hier niet direct gebruikt — verwijder die import niet; hij wordt gebruikt in de integratietest-fixture-verwerking. Nee: verwijder ongebruikte imports wél (hou de code schoon) — de integratietest importeert zelf wat hij nodig heeft.
+Gebruikte modules: alle imports hierboven worden gebruikt; voeg geen ongebruikte imports toe.
 
 - [ ] **Step 3: Voeg de sneltoets toe aan het manifest**
 
@@ -2485,6 +2498,7 @@ describe('content-flow (integratie)', () => {
   let listener;
 
   beforeEach(async () => {
+    document.documentElement.lang = 'nl'; // innerHTML-veeg laat attributen van <html> ongemoeid
     document.documentElement.innerHTML = readFileSync('tests/fixtures/article.html', 'utf8')
       .replace(/[\s\S]*<html[^>]*>/, '').replace(/<\/html>[\s\S]*/, '');
     sent = [];
