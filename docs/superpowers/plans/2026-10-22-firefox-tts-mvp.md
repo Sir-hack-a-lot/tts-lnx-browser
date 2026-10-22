@@ -559,7 +559,7 @@ describe('generateConnectionId', () => {
 
 describe('computeSecMsGec', () => {
   it('is 64 uppercase hex en deterministisch per 5-minutenvenster', async () => {
-    const now = new Date('2026-10-22T12:34:56Z').getTime();
+    const now = new Date('2026-10-22T12:32:00Z').getTime(); // +60s blijft binnen hetzelfde 300s-venster
     const a = await computeSecMsGec(now);
     expect(a).toMatch(/^[0-9A-F]{64}$/);
     expect(await computeSecMsGec(now + 60_000)).toBe(a);          // zelfde venster
