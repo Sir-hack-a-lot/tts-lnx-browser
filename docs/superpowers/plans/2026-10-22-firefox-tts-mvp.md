@@ -1590,7 +1590,9 @@ describe('createPlayer', () => {
     player.seek(2);
     await flush();
     expect(audio.stopCount).toBe(1);
-    expect(events).toContainEqual({ type: 'sentence-start', index: 2 });
+    // toMatchObject: sentence-start bevat ook een boundaries-key
+    expect(events.find((e) => e.type === 'sentence-start' && e.index === 2))
+      .toMatchObject({ type: 'sentence-start', index: 2 });
     expect(player.currentIndex()).toBe(2);
   });
 
