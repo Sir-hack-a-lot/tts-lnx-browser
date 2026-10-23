@@ -1,5 +1,37 @@
 <!doctype html>
 <html lang="nl">
-<head><meta charset="utf-8"><title>TTS-instellingen</title></head>
-<body><h1>Voorlees-instellingen</h1><p>Wordt in een latere taak uitgebouwd.</p><script src="options.js"></script></body>
+<head>
+  <meta charset="utf-8">
+  <title>TTS-instellingen</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; max-width: 36em; margin: 2em auto; }
+    label { display: block; margin: .8em 0; }
+    fieldset { margin: 1em 0; border-radius: 6px; }
+    #saved { color: #2e7d32; }
+  </style>
+</head>
+<body>
+  <h1>Voorlees-instellingen</h1>
+  <label>Standaardsnelheid
+    <select id="rate">
+      <option value="0.5">0,5×</option>
+      <option value="0.75">0,75×</option>
+      <option value="1">1×</option>
+      <option value="1.25">1,25×</option>
+      <option value="1.5">1,5×</option>
+      <option value="2">2×</option>
+    </select>
+  </label>
+  <fieldset>
+    <legend>Stem per taal</legend>
+    <div id="voices"></div>
+  </fieldset>
+  <fieldset>
+    <legend>Engine-voorkeur</legend>
+    <label><input type="radio" name="pref" value="cloud" checked> Cloud eerst (Edge TTS)</label>
+    <label title="Beschikbaar vanaf fase 2"><input type="radio" name="pref" value="local" disabled> Alleen lokaal (Piper — fase 2)</label>
+  </fieldset>
+  <p id="saved" hidden>Opgeslagen ✓</p>
+  <script src="options.js"></script>
+</body>
 </html>
