@@ -61,6 +61,10 @@ export function createPlayerBar(doc, { onControl }) {
       pauseBtn.textContent = isPlaying ? '⏸' : '▶';
       pauseBtn.setAttribute('aria-label', isPlaying ? 'Pauzeren' : 'Hervatten');
     },
+    setRate(r) {
+      const select = shadow.querySelector('[data-a="rate"]');
+      select.value = String(r);
+    },
     destroy() { host.remove(); },
   };
 }

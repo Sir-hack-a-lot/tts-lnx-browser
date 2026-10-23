@@ -45,6 +45,8 @@ browser.runtime.onMessage.addListener((msg, sender) => {
     activeTabId = sender.tab.id;
     (async () => {
       const s = await settings.load();
+      // Laat de playerbar de ingestelde snelheid tonen vóór de eerste player-event.
+      browser.tabs.sendMessage(sender.tab.id, { type: MSG.EVENT, event: { type: 'init', rate: s.rate } }).catch(() => {});
       ensurePlayer().start({
         sentences: msg.sentences,
         voice: resolveVoice(msg.lang, s.voiceOverrides),

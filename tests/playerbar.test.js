@@ -44,6 +44,12 @@ describe('createPlayerBar', () => {
     }
   });
 
+  it('setRate() zet de select-waarde', () => {
+    const { bar } = makeBar();
+    bar.setRate(1.5);
+    expect(bar._shadow.querySelector('select[data-a="rate"]').value).toBe('1.5');
+  });
+
   it('destroy() verwijdert de balk uit het document', () => {
     const { bar } = makeBar();
     bar.destroy();
