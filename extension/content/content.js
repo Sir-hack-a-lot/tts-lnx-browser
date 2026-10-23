@@ -11,6 +11,7 @@ let highlighter = null;
 let bar = null;
 let styleEl = null;
 let lastPos = { node: null, end: 0 }; // zoekpointer: laatste gelokaliseerde positie
+let lastIndex = -1; // index van de laatst gelokaliseerde zin (-1 = geen)
 let currentBoundaries = [];
 let wordPos = 0;
 let lastWordIndex = -1;
@@ -36,6 +37,7 @@ function cleanup() {
   styleEl = null;
   sentences = [];
   lastPos = { node: null, end: 0 };
+  lastIndex = -1;
   currentBoundaries = [];
   wordPos = 0;
   lastWordIndex = -1;
@@ -76,6 +78,10 @@ function onSentenceStart(event) {
   highlighter?.clear();
   const sentence = sentences[event.index];
   if (!sentence) return;
+  // Bij een sprong (seek vooruit/achteruit) is de voorwaartse zoekpointer
+  // ongeldig; reset hem zodat locateSentence weer vanaf het begin zoekt.
+  if (event.index !== lastIndex + 1) lastPos = { node: null, end: 0 };
+  lastIndex = event.index;
   const segs = locateSentence(document, sentence.text, { fromNode: lastPos.node, fromOffset: lastPos.end });
   if (!segs) return; // anker niet gevonden: doorspelen zonder highlight
   highlighter.setSentence(segs);
