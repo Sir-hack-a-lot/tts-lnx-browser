@@ -2516,7 +2516,10 @@ describe('content-flow (integratie)', () => {
       },
     };
     // Vers importeren per test zodat module-state niet lekt tussen tests.
-    await import(`../extension/content/content.js?test=${Date.now()}`);
+    // Let op: vite weigert VARIABELE dynamic imports — gebruik een vaste query-string
+    // per testbestand; module-state resetten gebeurt via de beforeEach-DOM-reset en
+    // de TOGGLE/stop-flow zelf (zie tests/content-seek.test.js voor het patroon).
+    await import('../extension/content/content.js?case=integration');
   });
 
   it('stuurt START met zinnen en taal bij TOGGLE', () => {
