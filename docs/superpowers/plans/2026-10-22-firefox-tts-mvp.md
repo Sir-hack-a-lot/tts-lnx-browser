@@ -1550,7 +1550,8 @@ describe('createPlayer', () => {
     const { engine, audio, events, player } = setup();
     player.start({ sentences: SENTENCES, voice: 'nl-NL-FennaNeural', rate: 1 });
     await flush();
-    expect(events[0]).toMatchObject({ type: 'sentence-start', index: 0 });
+    // playIndex emit eerst state:'loading'; zoek daarom het eerste sentence-start-event
+    expect(events.find((e) => e.type === 'sentence-start')).toMatchObject({ type: 'sentence-start', index: 0 });
     expect(engine.calls).toHaveLength(2); // zin 0 + prefetch zin 1
     audio.finish(); await flush();
     expect(events).toContainEqual({ type: 'sentence-end', index: 0 });
@@ -1670,7 +1671,11 @@ export function createPlayer({
 
   function prefetch(i) {
     if (i < 0 || i >= sentences.length || cache.has(i)) return;
-    cache.set(i, engine.synthesize({ text: sentences[i].text, voice, rate }));
+    const p = engine.synthesize({ text: sentences[i].text, voice, rate });
+    // Prefetch-fouten worden mogelijk nooit ge-await (zin wordt overgeslagen):
+    // noop-catch voorkomt unhandled rejections; playIndex vangt de echte fout zelf af.
+    p.catch(() => {});
+    cache.set(i, p);
   }
 
   async function playIndex(i) {
@@ -1708,7 +1713,7 @@ export function createPlayer({
     start({ sentences: s, voice: v, rate: r }) {
       generation++;
       stopTicker();
-      audio.stop();
+      if (idx >= 0) audio.stop(); // alleen stoppen als er al iets liep
       cache.clear();
       sentences = s;
       voice = v;
