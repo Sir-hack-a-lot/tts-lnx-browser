@@ -15,24 +15,22 @@ describe('generateConnectionId', () => {
 });
 
 describe('computeSecMsGec', () => {
-  it('is 64 uppercase hex en deterministisch per 5-minutenvenster', async () => {
+  it('heeft het v2-formaat en is deterministisch per 5-minutenvenster', () => {
     // NB: 12:32:00Z ligt 120s in het venster; +60s valt in hetzelfde venster.
     // (12:34:56Z uit de oorspronkelijke brief lag 296s in het venster en kruiste de grens.)
     const now = new Date('2026-10-22T12:32:00Z').getTime();
-    const a = await computeSecMsGec(now);
-    expect(a).toMatch(/^[0-9A-F]{64}$/);
-    expect(await computeSecMsGec(now + 60_000)).toBe(a);          // zelfde venster
-    expect(await computeSecMsGec(now + 6 * 60_000)).not.toBe(a);  // volgend venster
+    const a = computeSecMsGec(now);
+    expect(a).toMatch(/^[0-9A-F]{16}-[0-9A-F]{64}$/); // v2: CS64-SHA256
+    expect(computeSecMsGec(now + 60_000)).toBe(a);          // zelfde venster
+    expect(computeSecMsGec(now + 6 * 60_000)).not.toBe(a);  // volgend venster
   });
-  it('volgt het gedocumenteerde algoritme (onafhankelijke herberekening)', async () => {
-    const now = new Date('2026-10-22T12:34:56Z').getTime();
-    const WIN_EPOCH = 11644473600;
-    let ticks = Math.floor(now / 1000) + WIN_EPOCH;
-    ticks -= ticks % 300;
-    const input = `${BigInt(ticks) * 10_000_000n}${TRUSTED_CLIENT_TOKEN}`;
-    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
-    const expected = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-    expect(await computeSecMsGec(now)).toBe(expected);
+  it('komt overeen met een tegen de echte dienst gevalideerd token', () => {
+    // Regressievector: dit token is op 2026-10-24 met de echte dienst
+    // geverifieerd (websocket-handshake 101). Bevroren om bit-exacte drift
+    // in de CS64/SHA-256-port te vangen.
+    const now = new Date('2026-10-24T21:04:59.368Z').getTime();
+    expect(computeSecMsGec(now)).toBe(
+      '7F74E35C69DF60B0-9069C6F7F6FE2ACADAACEA11451034FB2C42E3AB6E69A02D2EB03748AAC8E100');
   });
 });
 

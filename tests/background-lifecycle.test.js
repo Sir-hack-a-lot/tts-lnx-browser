@@ -6,10 +6,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { MSG, CONTROL } from '../extension/shared/messages.js';
 
 // Fake WebSocket: synthese blijft bewust pending, zodat de player in
-// 'loading' blijft zonder netwerkverkeer.
+// 'loading' blijft zonder netwerkverkeer. send() is een no-op: zonder die
+// gooit de executor en hangt de testuitslag af van crypto-timing (flake).
 class FakeWebSocket {
   constructor() {}
   set binaryType(v) {}
+  send() {}
   close() {}
 }
 
@@ -34,6 +36,7 @@ function makeBrowser({ storageDelay = false } = {}) {
   b.browserAction = { onClicked: { addListener: () => {} } };
   b.commands = { onCommand: { addListener: () => {} } };
   b.runtime = { onMessage: { addListener: (fn) => { b.onMessage = fn; } } };
+  b.webRequest = { onBeforeSendHeaders: { addListener: (fn) => { b.onBeforeSendHeaders = fn; } } };
   return b;
 }
 
@@ -129,5 +132,20 @@ describe('background sessie-levenscyclus', () => {
     // ... maar een STOP van tab 2 stopt zijn eigen sessie wél.
     b.onMessage({ type: MSG.CONTROL, action: CONTROL.STOP }, { tab: { id: 2 } });
     expect(eventsTo(b, 2).some((e) => e.type === 'state' && e.state === 'idle')).toBe(true);
+  });
+
+  it('herschrijft de User-Agent naar Edge voor de TTS-host (dienst eist dat)', async () => {
+    const b = makeBrowser();
+    globalThis.browser = b;
+    await import('../extension/background/background.js?case=lc-ua');
+    const result = b.onBeforeSendHeaders({
+      requestHeaders: [
+        { name: 'User-Agent', value: 'Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0' },
+        { name: 'Accept', value: '*/*' },
+      ],
+    });
+    const ua = result.requestHeaders.find((h) => h.name.toLowerCase() === 'user-agent');
+    expect(ua.value).toContain('Edg/');
+    expect(result.requestHeaders.find((h) => h.name === 'Accept').value).toBe('*/*');
   });
 });
