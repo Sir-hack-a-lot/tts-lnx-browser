@@ -2496,13 +2496,20 @@ Test in jsdom met een gefake`browser`-object: TOGGLE → START-bericht met zinne
 `tests/integration.test.js`:
 ```js
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { MSG, CONTROL } from '../extension/shared/messages.js';
 
 describe('content-flow (integratie)', () => {
   let sent;
   let listener;
+
+  // content.js-module is per testbestand gecachet (vaste import-query); module-state
+  // (o.a. `active`) deelt over tests. Ruim daarom na elke test expliciet op:
+  // een 'end'-event buiten actieve toestand is een no-op.
+  afterEach(() => {
+    listener?.({ type: MSG.EVENT, event: { type: 'end' } });
+  });
 
   beforeEach(async () => {
     document.documentElement.lang = 'nl'; // innerHTML-veeg laat attributen van <html> ongemoeid
@@ -2587,7 +2594,7 @@ Expected: 5 tests PASS. Daarna hele suite: `npm test` → alles groen.
 
 Mogelijke valkuilen bij falen:
 - `content.js` gebruikt `browser.runtime.onMessage.addListener` op import-niveau → de fake moet vóór de import staan (staat in beforeEach).
-- Module-cache: de query-parameter in de import-URL forceert een verse module per test.
+- Module-cache: de vaste query in de import-URL maakt de module uniek t.o.v. andere testbestanden, maar binnen het bestand gedeeld — de afterEach-cleanup houdt de module-state schoon tussen tests.
 - Readability in jsdom: zie opmerking bij Task 6 als de fixture niet herkend wordt.
 
 - [ ] **Step 3: Commit**
