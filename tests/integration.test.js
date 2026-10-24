@@ -73,6 +73,18 @@ describe('content-flow (integratie)', () => {
     expect(document.body.innerHTML).toBe(before);
   });
 
+  it('ruimt alles op bij taken-over (sessie overgenomen door andere tab)', () => {
+    listener({ type: MSG.TOGGLE });
+    listener({ type: MSG.EVENT, event: { type: 'sentence-start', index: 0, boundaries: [] } });
+    expect(document.querySelector('.tts-sentence')).not.toBeNull();
+    sent.length = 0;
+    listener({ type: MSG.EVENT, event: { type: 'taken-over' } });
+    expect(document.querySelector('.tts-sentence')).toBeNull();
+    expect(document.getElementById('tts-lnx-playerbar')).toBeNull();
+    // Geen STOP terug naar de achtergrond: die zou de nieuwe sessie raken.
+    expect(sent.some((m) => m.type === MSG.CONTROL)).toBe(false);
+  });
+
   it('stuurt SEEK bij klik op een alinea', () => {
     listener({ type: MSG.TOGGLE });
     const start = sent.find((m) => m.type === MSG.START);

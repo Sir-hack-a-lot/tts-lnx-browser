@@ -109,6 +109,9 @@ function onEvent(event) {
     case 'progress': onProgress(event); break;
     case 'state': bar?.setPlaying(event.state === 'playing'); break;
     case 'end': cleanup(); break;
+    // Een andere tab heeft de sessie overgenomen: alleen lokaal opruimen,
+    // geen STOP terugsturen (die zou de nieuwe sessie raken).
+    case 'taken-over': cleanup(); break;
     case 'error': showNotice(`Voorlezen mislukt: ${event.message}`); cleanup(); break;
   }
 }
