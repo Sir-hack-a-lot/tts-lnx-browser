@@ -8,7 +8,7 @@
     "build": "node scripts/build.js",
     "test": "vitest run",
     "lint": "web-ext lint --source-dir dist",
-    "start": "web-ext run --source-dir dist",
+    "start": "sh scripts/run-dev.sh",
     "package": "web-ext build --source-dir dist --artifacts-dir web-ext-artifacts"
   },
   "devDependencies": {

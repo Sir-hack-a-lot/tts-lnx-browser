@@ -19,6 +19,10 @@ MVP (fase 1): cloud-stemmen via Edge TTS. Lokaal voorlezen via Piper
     npm start         # start Firefox met de extensie geladen
     npm run package   # bouwt web-ext-artifacts/tts_lnx_browser-<versie>.zip
 
+`npm start` gebruikt `scripts/run-dev.sh`: die zet TMPDIR onder `$HOME` zodat
+ook snap-Firefox het tijdelijke web-ext-profiel kan lezen (anders:
+"Your Firefox profile cannot be loaded").
+
 ## Gebruik
 
 - Klik op het luidspreker-icoon in de werkbalk, of druk op **Alt+R**.
