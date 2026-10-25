@@ -3,21 +3,8 @@ import { MSG, CONTROL } from '../shared/messages.js';
 import { createSettings } from '../shared/settings.js';
 import { resolveVoice } from '../shared/voices.js';
 import { createEdgeEngine } from './engines/edge-tts.js';
-import { EDGE_USER_AGENT } from './engines/edge-protocol.js';
 import { createAudioPlayer } from './audio-player.js';
 import { createPlayer } from './player.js';
-
-// De Edge TTS-dienst weigert de handshake (403) zonder Edge-User-Agent.
-// WebSocket staat geen UA-override toe vanuit JS, dus herschrijven we de
-// header hier via webRequest (MV2 blocking). Alleen voor de TTS-host.
-browser.webRequest.onBeforeSendHeaders.addListener(
-  (details) => ({
-    requestHeaders: details.requestHeaders.map((h) =>
-      h.name.toLowerCase() === 'user-agent' ? { ...h, value: EDGE_USER_AGENT } : h),
-  }),
-  { urls: ['https://speech.platform.bing.com/*', 'wss://speech.platform.bing.com/*'] },
-  ['blocking', 'requestHeaders'],
-);
 
 const settings = createSettings(browser.storage.local);
 const engine = createEdgeEngine();
@@ -115,3 +102,4 @@ browser.runtime.onMessage.addListener((msg, sender) => {
   }
   return false;
 });
+

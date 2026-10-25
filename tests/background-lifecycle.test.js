@@ -134,18 +134,4 @@ describe('background sessie-levenscyclus', () => {
     expect(eventsTo(b, 2).some((e) => e.type === 'state' && e.state === 'idle')).toBe(true);
   });
 
-  it('herschrijft de User-Agent naar Edge voor de TTS-host (dienst eist dat)', async () => {
-    const b = makeBrowser();
-    globalThis.browser = b;
-    await import('../extension/background/background.js?case=lc-ua');
-    const result = b.onBeforeSendHeaders({
-      requestHeaders: [
-        { name: 'User-Agent', value: 'Mozilla/5.0 (X11; Linux x86_64; rv:144.0) Gecko/20100101 Firefox/144.0' },
-        { name: 'Accept', value: '*/*' },
-      ],
-    });
-    const ua = result.requestHeaders.find((h) => h.name.toLowerCase() === 'user-agent');
-    expect(ua.value).toContain('Edg/');
-    expect(result.requestHeaders.find((h) => h.name === 'Accept').value).toBe('*/*');
-  });
 });

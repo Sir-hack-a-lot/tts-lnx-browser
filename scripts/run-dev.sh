@@ -10,4 +10,4 @@ set -e
 mkdir -p "$HOME/tmp"
 export TMPDIR="$HOME/tmp"
 
-exec npx web-ext run --source-dir dist
+exec npx web-ext run --source-dir dist "$@"
