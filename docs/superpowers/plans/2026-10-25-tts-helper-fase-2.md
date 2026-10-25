@@ -667,7 +667,9 @@ is omgezet — eerder verwijderen breekt de build.)
 
 **Interfaces:**
 - Produces: `createHelperEngine({ fetchImpl = globalThis.fetch, baseUrl = 'http://127.0.0.1:5020' } = {})`
-  met `name: 'helper'`, `isLocal: false`, `available()` (GET /health, timeout 1s),
+  met `name: 'helper'`, `isLocal: false`,
+  `health()` → geparste `/health`-JSON of `null` bij fout (timeout 1s),
+  `available()` → `health() !== null`,
   `synthesize({text, voice, rate, engine})` → `{audio: Blob, boundaries}` —
   zelfde vorm als de oude edge-engine zodat player.js ongewijzigd blijft.
   Fouten: helper onbereikbaar → `Error('helper-offline')`; 502/503 → `Error(detail)`.
@@ -874,8 +876,9 @@ Co-Authored-By: Claude Code <noreply@anthropic.com>"
 
 **Interfaces:**
 - voices.js: `VOICES` krijgt per stem `engine: 'edge'|'piper'` en piper-stemmen
-  (nl_NL-mls-medium); `resolveVoice(lang, overrides, engine)` kiest alleen
-  stemmen van de gevraagde engine.
+  (nl_NL-mls-medium); `resolveVoice(lang, overrides, engine = 'edge')` kiest
+  alleen stemmen van de gevraagde engine (derde param is optioneel zodat
+  Task 10 de oude aanroep kan blijven gebruiken tot Task 11 landt).
 - options: keuzelijst "Engine": cloud (Edge, mooiste stemmen) / lokaal (Piper,
   offline) / lokaal eerst met cloud-reserve; stemmenlijst per taal toont alleen
   stemmen van de gekozen engine; helper-statusregel (bereikbaar ja/nee via
