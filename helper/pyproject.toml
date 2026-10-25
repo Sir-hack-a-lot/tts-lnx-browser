@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tts-lnx-helper"
+version = "0.2.0"
+description = "Lokale TTS-helper voor de TTS LNX Browser Firefox-extensie (Edge-proxy + Piper)"
+requires-python = ">=3.10"
+dependencies = ["fastapi>=0.110", "uvicorn>=0.29", "websockets>=12"]
+
+[project.optional-dependencies]
+piper = ["piper-tts>=1.2"]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+tts-lnx-helper = "tts_lnx_helper.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tts_lnx_helper*"]
