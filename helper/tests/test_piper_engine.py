@@ -41,6 +41,43 @@ def test_synthesize_geeft_wav_zonder_boundaries(monkeypatch, tmp_path):
     assert fake.gezien_syn_config.length_scale == pytest.approx(1 / 1.5)
 
 
+def test_synthesize_zonder_chunks_geeft_lege_wav(monkeypatch, tmp_path):
+    # Lege tekst -> nul chunks; synthesize mag dan geen wave.Error gooien
+    # maar moet een valide (lege) WAV teruggeven.
+    class StilleStem:
+        def synthesize(self, text, syn_config=None):
+            return iter([])
+
+    monkeypatch.setattr(piper_engine, "ensure_voice", lambda v: tmp_path / "x.onnx")
+    monkeypatch.setattr(piper_engine, "load_voice", lambda p: StilleStem())
+    wav, boundaries = piper_engine.synthesize("", "nl_NL-mls-medium", 1.0)
+    assert wav[:4] == b"RIFF"
+    assert boundaries == []
+
+
+def test_fetch_gebruikt_timeout(monkeypatch):
+    # _fetch moet urlopen met een eindige timeout aanroepen (geen onbeperkt hangen).
+    gezien = {}
+
+    class FakeAntwoord:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return b"data"
+
+    def fake_urlopen(url, timeout=None):
+        gezien["timeout"] = timeout
+        return FakeAntwoord()
+
+    monkeypatch.setattr(piper_engine.urllib.request, "urlopen", fake_urlopen)
+    assert piper_engine._fetch("https://voorbeeld.test/x") == b"data"
+    assert gezien["timeout"] == piper_engine.DOWNLOAD_TIMEOUT
+
+
 def test_ensure_voice_downloadt_ontbrekende_bestanden(monkeypatch, tmp_path):
     # Geen netwerk: _fetch wordt vervangen door een vaste bytes-teruggever.
     opgehaald = []

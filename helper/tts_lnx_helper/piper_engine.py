@@ -22,6 +22,9 @@ DEFAULT_VOICES = {"nl": "nl_NL-mls-medium"}
 # Download-basis: https://huggingface.co/rhasspy/piper-voices/resolve/main/
 _HF_BASE = "https://huggingface.co/rhasspy/piper-voices/resolve/main"
 
+# Maximale wachttijd per download; voorkomt onbeperkt hangen op een dode verbinding.
+DOWNLOAD_TIMEOUT = 60
+
 _voice_cache = {}
 
 
@@ -41,7 +44,7 @@ def _voice_relpad(voice_id):
 
 def _fetch(url):
     """Haal een URL op als bytes (urllib volgt redirects vanzelf)."""
-    with urllib.request.urlopen(url) as antwoord:
+    with urllib.request.urlopen(url, timeout=DOWNLOAD_TIMEOUT) as antwoord:
         return antwoord.read()
 
 
@@ -96,4 +99,10 @@ def synthesize(text, voice, rate):
                 wav.setframerate(chunk.sample_rate)
                 eerste_chunk = False
             wav.writeframes(chunk.audio_int16_bytes)
+        if eerste_chunk:
+            # Geen chunks (bijv. lege tekst): schrijf een standaardheader zodat
+            # wave.close() geen wave.Error gooit en er een valide lege WAV uitkomt.
+            wav.setnchannels(1)
+            wav.setsampwidth(2)
+            wav.setframerate(22050)
     return buffer.getvalue(), []
