@@ -112,7 +112,13 @@ function onEvent(event) {
     // Een andere tab heeft de sessie overgenomen: alleen lokaal opruimen,
     // geen STOP terugsturen (die zou de nieuwe sessie raken).
     case 'taken-over': cleanup(); break;
-    case 'error': showNotice(`Voorlezen mislukt: ${event.message}`); cleanup(); break;
+    case 'error':
+      // Helper draait niet: toon de installatie-instructie i.p.v. een kale fout.
+      showNotice(event.message === 'helper-offline'
+        ? 'Helper draait niet. Installeer met: pipx install tts-lnx-helper'
+        : `Voorlezen mislukt: ${event.message}`);
+      cleanup();
+      break;
   }
 }
 

@@ -85,6 +85,15 @@ describe('content-flow (integratie)', () => {
     expect(sent.some((m) => m.type === MSG.CONTROL)).toBe(false);
   });
 
+  it('toont installatie-instructie bij helper-offline en ruimt op', () => {
+    listener({ type: MSG.TOGGLE });
+    expect(document.getElementById('tts-lnx-playerbar')).not.toBeNull();
+    listener({ type: MSG.EVENT, event: { type: 'error', message: 'helper-offline' } });
+    expect(document.body.textContent)
+      .toContain('Helper draait niet. Installeer met: pipx install tts-lnx-helper');
+    expect(document.getElementById('tts-lnx-playerbar')).toBeNull();
+  });
+
   it('stuurt SEEK bij klik op een alinea', () => {
     listener({ type: MSG.TOGGLE });
     const start = sent.find((m) => m.type === MSG.START);

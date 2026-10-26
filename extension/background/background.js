@@ -1,13 +1,22 @@
 // Berichtenrouter: koppelt content scripts aan de player.
+// Synthese loopt via de lokale helper (HTTP 127.0.0.1:5020): de helper-engine
+// doet de HTTP-calls, de engine-router kiest per verzoek edge (cloud) of
+// piper (lokaal) op basis van de gebruikersvoorkeur en de helper-health.
 import { MSG, CONTROL } from '../shared/messages.js';
 import { createSettings } from '../shared/settings.js';
 import { resolveVoice } from '../shared/voices.js';
-import { createEdgeEngine } from './engines/edge-tts.js';
+import { createHelperEngine } from './engines/helper-engine.js';
+import { createRouter } from './engine-router.js';
 import { createAudioPlayer } from './audio-player.js';
 import { createPlayer } from './player.js';
 
+// Vaste stem voor de piper-engine (taalafhankelijke keuze volgt in Task 11).
+const PIPER_VOICE = 'nl_NL-mls-medium';
+
 const settings = createSettings(browser.storage.local);
-const engine = createEdgeEngine();
+// createRouter geeft een Promise; de bundle is iife (geen top-level await),
+// dus de router wordt ge-await in de START-flow vóór de player start.
+const routerPromise = createRouter({ helperEngine: createHelperEngine(), settings });
 let player = null;
 let activeTabId = null;
 // Sessietoken: elke START en elke sessie-beëindiging verhoogt de teller.
@@ -15,10 +24,10 @@ let activeTabId = null;
 // ondertussen is verhoogd — zo gaat een STOP tijdens het opstarten niet verloren.
 let sessionToken = 0;
 
-function ensurePlayer() {
+function ensurePlayer(router) {
   if (player) return player;
   player = createPlayer({
-    engine,
+    engine: router,
     audio: createAudioPlayer(),
     onEvent: (event) => {
       if (activeTabId == null) return;
@@ -77,9 +86,24 @@ browser.runtime.onMessage.addListener((msg, sender) => {
       if (token !== sessionToken) return;
       // Laat de playerbar de ingestelde snelheid tonen vóór de eerste player-event.
       browser.tabs.sendMessage(tabId, { type: MSG.EVENT, event: { type: 'init', rate: s.rate } }).catch(() => {});
-      ensurePlayer().start({
+      // Kies de engine (edge/piper) vóór de stem: de voice-id's zijn
+      // engine-afhankelijk. Faalt dit (helper offline, piper afwezig), dan
+      // gaat de fout als error-event naar de playerbar.
+      let engineNaam;
+      try {
+        ({ engine: engineNaam } = await (await routerPromise).pickEngine(msg.lang));
+      } catch (err) {
+        if (token !== sessionToken) return;
+        browser.tabs.sendMessage(tabId, {
+          type: MSG.EVENT,
+          event: { type: 'error', message: String(err?.message || err) },
+        }).catch(() => {});
+        return;
+      }
+      if (token !== sessionToken) return;
+      ensurePlayer(await routerPromise).start({
         sentences: msg.sentences,
-        voice: resolveVoice(msg.lang, s.voiceOverrides),
+        voice: engineNaam === 'piper' ? PIPER_VOICE : resolveVoice(msg.lang, s.voiceOverrides),
         rate: s.rate,
       });
     })();
@@ -102,4 +126,3 @@ browser.runtime.onMessage.addListener((msg, sender) => {
   }
   return false;
 });
-
