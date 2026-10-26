@@ -79,8 +79,9 @@ def create_app() -> FastAPI:
                 # piper_engine.synthesize is synchroon; ontbreekt de stem dan
                 # downloadt ensure_voice die eerst (zie piper_engine).
                 audio, boundaries = piper_engine.synthesize(req.text, req.voice, req.rate)
-            except urllib.error.URLError as e:
-                # Download van de stem mislukt: tijdelijk niet beschikbaar.
+            except (urllib.error.URLError, TimeoutError) as e:
+                # Download van de stem mislukt (netwerkfout of timeout):
+                # tijdelijk niet beschikbaar.
                 raise HTTPException(503, f"stemdownload mislukt: {e}")
             except Exception as e:
                 raise HTTPException(502, str(e))
