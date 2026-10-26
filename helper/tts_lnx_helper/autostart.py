@@ -12,9 +12,9 @@ from pathlib import Path
 
 AUTOSTART_DIR = Path.home() / ".config" / "autostart"
 
-DESKTOP_BESTAND = "tts-lnx-helper.desktop"
+DESKTOP_FILENAME = "tts-lnx-helper.desktop"
 
-_DESKTOP_INHOUD = """[Desktop Entry]
+_DESKTOP_CONTENT = """[Desktop Entry]
 Type=Application
 Name=TTS LNX Helper
 Comment=Lokale TTS-helper voor de TTS LNX Browser-extensie
@@ -27,14 +27,14 @@ X-GNOME-Autostart-enabled=true
 def install() -> None:
     """Schrijf de .desktop-entry in AUTOSTART_DIR (overschrijft een bestaande)."""
     AUTOSTART_DIR.mkdir(parents=True, exist_ok=True)
-    pad = AUTOSTART_DIR / DESKTOP_BESTAND
-    pad.write_text(_DESKTOP_INHOUD)
+    pad = AUTOSTART_DIR / DESKTOP_FILENAME
+    pad.write_text(_DESKTOP_CONTENT)
     print(f"Autostart geïnstalleerd: {pad}")
 
 
 def uninstall() -> None:
     """Verwijder de .desktop-entry; geen fout als die er niet is."""
-    pad = AUTOSTART_DIR / DESKTOP_BESTAND
+    pad = AUTOSTART_DIR / DESKTOP_FILENAME
     try:
         pad.unlink()
         print(f"Autostart verwijderd: {pad}")
