@@ -1,7 +1,7 @@
 // Dunne wrapper om browser.storage.local met defaults en een in-memory cache.
 export const DEFAULTS = {
   rate: 1,
-  enginePref: 'cloud', // fase 2: 'local-first' | 'local-only'
+  enginePref: 'cloud', // 'cloud' | 'local' | 'local-first'
   voiceOverrides: {},  // {nl: 'nl-NL-MaartenNeural', ...}
 };
 
