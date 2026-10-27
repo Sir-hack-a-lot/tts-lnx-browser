@@ -1,0 +1,5 @@
+{
+  "audio_b64": "TVAz",
+  "format": "mp3",
+  "boundaries": [{ "text": "Hallo", "offsetMs": 0, "durationMs": 300 }]
+}
