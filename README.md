@@ -20,12 +20,14 @@ PDF-ondersteuning (fase 3) volgt; zie
 
 De extensie heeft de helper nodig; zonder helper werkt voorlezen niet.
 
-1. Installeer en start de helper (zie ook `helper/README.md`):
+1. Clone de repo en installeer en start de helper (zie ook `helper/README.md`):
 
-       pipx install tts-lnx-helper
+       git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
+       cd tts-lnx-browser
+       pipx install ./helper
        tts-lnx-helper          # draait op 127.0.0.1:5020
 
-   Vanuit een lokale checkout kan ook: `pipx install ./helper`.
+   Het pakket staat (nog) niet op PyPI; publicatie kan later volgen.
 
 2. Optioneel automatisch starten bij inloggen:
 

@@ -4,7 +4,9 @@ Lokale TTS-helper voor de TTS LNX Browser Firefox-extensie.
 
 ## Installatie
 
-    pipx install tts-lnx-helper
+    git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
+    cd tts-lnx-browser
+    pipx install ./helper
     tts-lnx-helper          # draaien op 127.0.0.1:5020
 
 Optioneel automatisch starten bij inloggen:

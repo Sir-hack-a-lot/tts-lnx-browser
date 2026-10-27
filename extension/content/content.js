@@ -115,7 +115,7 @@ function onEvent(event) {
     case 'error':
       // Helper draait niet: toon de installatie-instructie i.p.v. een kale fout.
       showNotice(event.message === 'helper-offline'
-        ? 'Helper draait niet. Installeer met: pipx install tts-lnx-helper'
+        ? 'Helper draait niet. Installeer met: pipx install ./helper (zie README)'
         : `Voorlezen mislukt: ${event.message}`);
       cleanup();
       break;

@@ -90,7 +90,7 @@ describe('content-flow (integratie)', () => {
     expect(document.getElementById('tts-lnx-playerbar')).not.toBeNull();
     listener({ type: MSG.EVENT, event: { type: 'error', message: 'helper-offline' } });
     expect(document.body.textContent)
-      .toContain('Helper draait niet. Installeer met: pipx install tts-lnx-helper');
+      .toContain('Helper draait niet. Installeer met: pipx install ./helper (zie README)');
     expect(document.getElementById('tts-lnx-playerbar')).toBeNull();
   });
 
