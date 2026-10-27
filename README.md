@@ -6,9 +6,37 @@ voor Linux.
 
 ## Status
 
-MVP (fase 1): cloud-stemmen via Edge TTS. Lokaal voorlezen via Piper
-(fase 2) en PDF-ondersteuning (fase 3) volgen; zie
+Fase 2: de extensie praat via HTTP met een lokale helper
+(`tts-lnx-helper`, op 127.0.0.1:5020) met twee engines:
+
+- **edge** — proxy naar Edge TTS (Microsoft, cloud): mooiste stemmen en
+  highlighting op woordniveau.
+- **piper** — volledig lokaal en offline: highlighting op zinsniveau.
+
+PDF-ondersteuning (fase 3) volgt; zie
 `docs/superpowers/specs/2026-10-22-firefox-tts-extensie-design.md`.
+
+## Installatie
+
+De extensie heeft de helper nodig; zonder helper werkt voorlezen niet.
+
+1. Installeer en start de helper (zie ook `helper/README.md`):
+
+       pipx install tts-lnx-helper
+       tts-lnx-helper          # draait op 127.0.0.1:5020
+
+   Vanuit een lokale checkout kan ook: `pipx install ./helper`.
+
+2. Optioneel automatisch starten bij inloggen:
+
+       tts-lnx-helper-autostart install
+
+3. Installeer de extensie in Firefox: bouw met `npm run package` en laad
+   `web-ext-artifacts/tts_lnx_browser-<versie>.zip`, of draai tijdelijk met
+   `npm start`.
+
+Bij eerste gebruik van de piper-engine wordt de Nederlandse stem
+(nl_NL-mls-medium) gedownload naar `~/.local/share/tts-lnx-helper/voices/`.
 
 ## Ontwikkelen
 
@@ -23,27 +51,40 @@ MVP (fase 1): cloud-stemmen via Edge TTS. Lokaal voorlezen via Piper
 ook snap-Firefox het tijdelijke web-ext-profiel kan lezen (anders:
 "Your Firefox profile cannot be loaded").
 
+Helper ontwikkelen: zie `helper/README.md` (tests:
+`cd helper && .venv/bin/python -m pytest tests/ -q`).
+
 ## Gebruik
 
 - Klik op het luidspreker-icoon in de werkbalk, of druk op **Alt+R**.
 - De playerbar onderin: vorige/volgende zin, pauze, stop, snelheid (0,5×–2×).
-- De actieve zin en het actieve woord lichten op; de pagina scrollt mee.
+- De actieve zin licht op en de pagina scrollt mee; met de edge-engine licht
+  ook het actieve woord op.
 - Klik op een alinea om vanaf die plek voor te lezen.
 - Instellingen (about:addons → TTS LNX Browser → Voorkeuren): standaard-
-  snelheid en stem per taal (Nederlands, Engels, Duits, Frans, Spaans).
+  snelheid, stem per taal (Nederlands, Engels, Duits, Frans, Spaans) en
+  engine-keuze:
+  - **Cloud (Edge TTS — mooiste stemmen)**
+  - **Lokaal (Piper — offline, eigen stemmen)**
+  - **Lokaal eerst, cloud als reserve**
+- Draait de helper niet, dan toont de playerbar een installatie-melding;
+  de extensie crasht niet en werkt weer zodra de helper start.
 
 ## Privacy
 
-Bij cloud-voorlezen gaat de paginatekst naar Microsoft (Edge TTS). De
-extensie doet verder geen netwerkverkeer en verzamelt geen gegevens.
-Volledig lokale verwerking komt in fase 2 met de optionele Piper-helper.
+- Engine **edge**: de paginatekst gaat via de lokale helper naar Microsoft
+  (Edge TTS).
+- Engine **piper**: volledig lokale verwerking, geen netwerkverkeer met
+  paginatekst.
+- De helper luistert alleen op 127.0.0.1, schrijft geen paginatekst naar
+  schijf en logt geen inhoud. De extensie verzamelt geen gegevens.
 
-## Bekende beperkingen (MVP)
+## Bekende beperkingen
 
 - De Edge TTS API is onofficieel; bij wijzigingen kan cloud-voorlezen
-  tijdelijk stuk zijn (Piper-helper in fase 2 maakt dit onafhankelijk).
-- Woord-niveau highlighting werkt alleen met de cloud-engine (Piper levert
-  geen woordtiming; zin-niveau blijft dan).
+  tijdelijk stuk zijn (de piper-engine maakt hier onafhankelijk van).
+- Woord-niveau highlighting werkt alleen met de edge-engine (Piper levert
+  geen woordtiming; highlighting blijft dan op zinsniveau).
 - Snelheid wijzigen geldt vanaf de volgende zin.
 - Klik-om-te-seeken springt naar de eerste zin van de aangeklikte alinea.
 - Geen PDF-ondersteuning (fase 3).
