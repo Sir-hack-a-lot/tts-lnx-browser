@@ -1,10 +1,13 @@
 """FastAPI-server van de helper. Bindt uitsluitend op 127.0.0.1 (zie __main__)."""
 import base64
+import logging
 import urllib.error
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from . import edge_engine
 from . import piper_engine
+
+logger = logging.getLogger(__name__)
 
 # Statische Edge-stemmenlijst: (id, naam, taal). Edge kent honderden stemmen;
 # dit is de vaste selectie die de extensie aanbiedt.
@@ -84,7 +87,12 @@ def create_app() -> FastAPI:
                 # tijdelijk niet beschikbaar.
                 raise HTTPException(503, f"stemdownload mislukt: {e}")
             except Exception as e:
-                raise HTTPException(502, str(e))
+                # Ruwe engine-exceptie niet doorgeven: die kan engine-internals
+                # (en invoerfragmenten uit de phonemizer) bevatten en belandt
+                # recht in de playerbar. Vaste schone melding naar de client;
+                # server-side alleen het exceptietype loggen, nooit de inhoud.
+                logger.warning("Piper-synthese mislukt (%s)", type(e).__name__)
+                raise HTTPException(502, "Piper-synthese mislukt")
             return {"audio_b64": base64.b64encode(audio).decode(),
                     "format": "wav", "boundaries": boundaries}
         raise HTTPException(503, f"engine '{req.engine}' niet beschikbaar")

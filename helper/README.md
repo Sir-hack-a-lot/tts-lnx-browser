@@ -6,8 +6,12 @@ Lokale TTS-helper voor de TTS LNX Browser Firefox-extensie.
 
     git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
     cd tts-lnx-browser
-    pipx install ./helper
+    pipx install './helper[piper]'
     tts-lnx-helper          # draaien op 127.0.0.1:5020
+
+De extra `[piper]` installeert de lokale piper-engine mee. Zonder die extra
+(`pipx install ./helper`) werkt alleen de cloud-engine (edge); een voorkeur
+voor "lokaal" mislukt dan met "piper niet beschikbaar".
 
 Optioneel automatisch starten bij inloggen:
 

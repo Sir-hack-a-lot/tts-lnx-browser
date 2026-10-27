@@ -1,7 +1,7 @@
 """Gedeelde constanten voor de Edge TTS-websocket (zelfde waarden als de extensie).
 
-Bron: extension/background/engines/edge-protocol.js — bij wijziging beide
-gelijktijdig aanpassen.
+De GEC-constanten zijn bevroren als testvector in helper/tests/test_gec.py;
+bij wijziging die test mee aanpassen.
 """
 
 TRUSTED_CLIENT_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4'

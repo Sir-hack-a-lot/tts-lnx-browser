@@ -50,6 +50,9 @@ def test_synthesize_piper_synthesefout_geeft_502(monkeypatch):
     r = client.post("/synthesize", json={
         "text": "Hallo.", "voice": "nl_NL-mls-medium", "rate": 1.0, "engine": "piper"})
     assert r.status_code == 502
+    # De client krijgt een vaste schone melding; de ruwe engine-exceptie
+    # ("piper crashte") mag niet naar buiten lekken.
+    assert r.json()["detail"] == "Piper-synthese mislukt"
 
 
 def test_voices_zonder_voice_dir_geeft_alleen_edge(monkeypatch, tmp_path):
