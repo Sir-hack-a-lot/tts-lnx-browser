@@ -157,8 +157,8 @@ describe('background sessie-levenscyclus', () => {
     expect(eventsTo(b, 1).some((e) => e.type === 'state')).toBe(false);
   });
 
-  it('piper-engine gebruikt de vaste piper-stem; edge gebruikt resolveVoice', async () => {
-    // enginePref 'local' + piper aanwezig → vaste piper-stem.
+  it('piper-engine kiest een piper-stem; edge een edge-stem (beide via resolveVoice)', async () => {
+    // enginePref 'local' + piper aanwezig → piper-stem voor de taal.
     const b = makeBrowser({ stored: { enginePref: 'local' } });
     globalThis.browser = b;
     const piper = makeFetch();
@@ -177,5 +177,64 @@ describe('background sessie-levenscyclus', () => {
     b2.onMessage(startMsg, { tab: { id: 1 } });
     await tick();
     expect(edge.synthBodies[0]).toMatchObject({ engine: 'edge', voice: 'nl-NL-FennaNeural' });
+  });
+
+  it('een stem-override geldt alleen voor zijn eigen engine', async () => {
+    // Edge-override wordt gerespecteerd op de edge-engine ...
+    const b = makeBrowser({ stored: { voiceOverrides: { nl: 'nl-NL-MaartenNeural' } } });
+    globalThis.browser = b;
+    const edge = makeFetch();
+    globalThis.fetch = edge.fetchImpl;
+    await import('../extension/background/background.js?case=lc-override-edge');
+    b.onMessage(startMsg, { tab: { id: 1 } });
+    await tick();
+    expect(edge.synthBodies[0]).toMatchObject({ engine: 'edge', voice: 'nl-NL-MaartenNeural' });
+
+    // ... maar lekt niet naar piper: daar geldt de piper-stem van de taal.
+    const b2 = makeBrowser({ stored: { enginePref: 'local', voiceOverrides: { nl: 'nl-NL-MaartenNeural' } } });
+    globalThis.browser = b2;
+    const piper = makeFetch();
+    globalThis.fetch = piper.fetchImpl;
+    await import('../extension/background/background.js?case=lc-override-piper');
+    b2.onMessage(startMsg, { tab: { id: 1 } });
+    await tick();
+    expect(piper.synthBodies[0]).toMatchObject({ engine: 'piper', voice: 'nl_NL-mls-medium' });
+  });
+
+  it('engine-wissel mid-sessie (piper→edge) met piper-stem: error-event, geen crash', async () => {
+    // Bevriezingstest voor de gedocumenteerde beperking: bij pref local-first
+    // kan piper na de START verdwijnen; de stem ligt sessie-breed vast. De
+    // helper weigert de piper-stem op edge → nette error + schone stop.
+    let healthCalls = 0;
+    const fetchImpl = (url, opts) => {
+      if (url.endsWith('/health')) {
+        healthCalls++;
+        // Alleen bij de enginekeuze van START is piper er nog; daarna niet meer.
+        const engines = { edge: true, piper: healthCalls === 1 };
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ status: 'ok', engines }) });
+      }
+      const body = JSON.parse(opts.body);
+      if (body.engine === 'edge') {
+        // De helper weigert een piper-stem op de edge-engine.
+        return Promise.resolve({
+          ok: false,
+          status: 502,
+          json: () => Promise.resolve({ detail: `edge kent stem '${body.voice}' niet` }),
+        });
+      }
+      return new Promise(() => {}); // piper-synthesize blijft hangen
+    };
+    const b = makeBrowser({ stored: { enginePref: 'local-first' } });
+    globalThis.browser = b;
+    globalThis.fetch = fetchImpl;
+    await import('../extension/background/background.js?case=lc-switch');
+    b.onMessage(startMsg, { tab: { id: 1 } });
+    await tick();
+
+    const events = eventsTo(b, 1);
+    // De sessie koos piper met de piper-stem; de wissel naar edge faalt met
+    // een error-event dat de stem noemt, en de player stopt schoon (idle).
+    expect(events.some((e) => e.type === 'error' && e.message.includes('nl_NL-mls-medium'))).toBe(true);
+    expect(events.some((e) => e.type === 'state' && e.state === 'idle')).toBe(true);
   });
 });

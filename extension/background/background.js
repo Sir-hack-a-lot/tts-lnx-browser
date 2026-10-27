@@ -10,9 +10,13 @@ import { createRouter } from './engine-router.js';
 import { createAudioPlayer } from './audio-player.js';
 import { createPlayer } from './player.js';
 
-// Vaste stem voor de piper-engine (taalafhankelijke keuze volgt in Task 11).
-const PIPER_VOICE = 'nl_NL-mls-medium';
-
+// De stem wordt per sessie vastgelegd via resolveVoice op de engine die
+// pickEngine koos. Bekende beperking: bij pref 'local-first' kan de engine
+// mid-sessie wisselen (de router evalueert de helper-health per zin; valt
+// piper weg, dan gaat het verder met edge) terwijl de stem sessie-breed
+// vastligt. De helper weigert dan de vreemde stem-id; de faalmodus is een
+// net error-event naar de playerbar plus een schone stop van de player
+// (gedocumenteerd; automatische failover naar een passende stem volgt later).
 const settings = createSettings(browser.storage.local);
 // createRouter geeft een Promise; de bundle is iife (geen top-level await),
 // dus de router wordt ge-await in de START-flow vóór de player start.
@@ -103,7 +107,7 @@ browser.runtime.onMessage.addListener((msg, sender) => {
       if (token !== sessionToken) return;
       ensurePlayer(await routerPromise).start({
         sentences: msg.sentences,
-        voice: engineNaam === 'piper' ? PIPER_VOICE : resolveVoice(msg.lang, s.voiceOverrides),
+        voice: resolveVoice(msg.lang, s.voiceOverrides, engineNaam),
         rate: s.rate,
       });
     })();

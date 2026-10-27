@@ -27,9 +27,14 @@
     <div id="voices"></div>
   </fieldset>
   <fieldset>
-    <legend>Engine-voorkeur</legend>
-    <label><input type="radio" name="pref" value="cloud" checked> Cloud eerst (Edge TTS)</label>
-    <label title="Beschikbaar vanaf fase 2"><input type="radio" name="pref" value="local" disabled> Alleen lokaal (Piper — fase 2)</label>
+    <legend>Engine</legend>
+    <label><input type="radio" name="pref" value="cloud" checked> Cloud (Edge TTS — mooiste stemmen)</label>
+    <label><input type="radio" name="pref" value="local"> Lokaal (Piper — offline, eigen stemmen)</label>
+    <label><input type="radio" name="pref" value="local-first"> Lokaal eerst, cloud als reserve</label>
+  </fieldset>
+  <fieldset>
+    <legend>Lokale helper</legend>
+    <p id="helper-status">Helper-status wordt opgehaald…</p>
   </fieldset>
   <p id="saved" hidden>Opgeslagen ✓</p>
   <script src="options.js"></script>
