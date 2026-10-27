@@ -7,6 +7,7 @@
     body { font: 14px system-ui, sans-serif; max-width: 36em; margin: 2em auto; }
     label { display: block; margin: .8em 0; }
     fieldset { margin: 1em 0; border-radius: 6px; }
+    .note { color: #555; font-size: 13px; margin: .4em 0 0; }
     #saved { color: #2e7d32; }
   </style>
 </head>
@@ -31,6 +32,9 @@
     <label><input type="radio" name="pref" value="cloud" checked> Cloud (Edge TTS — mooiste stemmen)</label>
     <label><input type="radio" name="pref" value="local"> Lokaal (Piper — offline, eigen stemmen)</label>
     <label><input type="radio" name="pref" value="local-first"> Lokaal eerst, cloud als reserve</label>
+    <p class="note">Bij cloud (Edge) gaat de voorgelezen tekst via de lokale
+      helper naar Microsoft; bij lokaal (Piper) blijft de tekst volledig op
+      je computer.</p>
   </fieldset>
   <fieldset>
     <legend>Lokale helper</legend>

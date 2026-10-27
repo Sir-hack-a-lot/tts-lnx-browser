@@ -144,6 +144,26 @@ describe('background sessie-levenscyclus', () => {
     expect(eventsTo(b, 2).some((e) => e.type === 'state' && e.state === 'idle')).toBe(true);
   });
 
+  it('init-event draagt de gekozen engine mee naar de playerbar', async () => {
+    // Pref 'local' + piper aanwezig → init meldt engine 'piper'.
+    const b = makeBrowser({ stored: { enginePref: 'local' } });
+    globalThis.browser = b;
+    globalThis.fetch = makeFetch().fetchImpl;
+    await import('../extension/background/background.js?case=lc-init-engine-piper');
+    b.onMessage(startMsg, { tab: { id: 1 } });
+    await tick();
+    expect(eventsTo(b, 1).some((e) => e.type === 'init' && e.engine === 'piper')).toBe(true);
+
+    // Pref 'cloud' → init meldt engine 'edge'.
+    const b2 = makeBrowser({ stored: { enginePref: 'cloud' } });
+    globalThis.browser = b2;
+    globalThis.fetch = makeFetch().fetchImpl;
+    await import('../extension/background/background.js?case=lc-init-engine-edge');
+    b2.onMessage(startMsg, { tab: { id: 1 } });
+    await tick();
+    expect(eventsTo(b2, 1).some((e) => e.type === 'init' && e.engine === 'edge')).toBe(true);
+  });
+
   it('helper offline bij START stuurt een helper-offline error-event naar de tab', async () => {
     const b = makeBrowser();
     globalThis.browser = b;

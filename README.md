@@ -24,8 +24,11 @@ De extensie heeft de helper nodig; zonder helper werkt voorlezen niet.
 
        git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
        cd tts-lnx-browser
-       pipx install ./helper
+       pipx install './helper[piper]'
        tts-lnx-helper          # draait op 127.0.0.1:5020
+
+   De extra `[piper]` installeert de lokale piper-engine mee; zonder die
+   extra werkt alleen de cloud-engine (edge).
 
    Het pakket staat (nog) niet op PyPI; publicatie kan later volgen.
 

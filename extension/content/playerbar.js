@@ -37,11 +37,12 @@ export function createPlayerBar(doc, { onControl }) {
         <option value="1.5">1,5×</option>
         <option value="2">2×</option>
       </select>
-      <span class="engine" title="Engine: cloud (Edge TTS)">☁</span>
+      <span class="engine" title="Engine: cloud (Edge TTS via helper)">☁</span>
     </div>`;
 
   let playing = true;
   const pauseBtn = shadow.querySelector('[data-a="pause"]');
+  const engineEl = shadow.querySelector('.engine');
 
   shadow.querySelector('[data-a="prev"]').addEventListener('click', () => onControl(CONTROL.PREV));
   shadow.querySelector('[data-a="next"]').addEventListener('click', () => onControl(CONTROL.NEXT));
@@ -64,6 +65,17 @@ export function createPlayerBar(doc, { onControl }) {
     setRate(r) {
       const select = shadow.querySelector('[data-a="rate"]');
       select.value = String(r);
+    },
+    // Engine-indicator: wolkje = cloud (Edge TTS via helper), huisje = lokaal
+    // (Piper). De tooltip maakt expliciet waar de paginatekst heen gaat.
+    setEngine(engine) {
+      if (engine === 'piper') {
+        engineEl.textContent = '🏠';
+        engineEl.title = 'Engine: lokaal (Piper)';
+      } else {
+        engineEl.textContent = '☁';
+        engineEl.title = 'Engine: cloud (Edge TTS via helper)';
+      }
     },
     destroy() { host.remove(); },
   };

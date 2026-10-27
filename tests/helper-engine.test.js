@@ -42,6 +42,19 @@ describe('helper-engine', () => {
       .rejects.toThrow('Edge TTS websocket-fout');
   });
 
+  it('422 met detail als array valt terug op helper-fout <status>', async () => {
+    // FastAPI stuurt bij een validatiefout een array in detail; die mag niet
+    // als "[object Object]" in de foutmelding belanden.
+    const fetchImpl = () => Promise.resolve({
+      ok: false,
+      status: 422,
+      json: () => Promise.resolve({ detail: [{ loc: ['body', 'text'], msg: 'field required' }] }),
+    });
+    const engine = createHelperEngine({ fetchImpl });
+    await expect(engine.synthesize({ text: 'x', voice: 'v', rate: 1, engine: 'edge' }))
+      .rejects.toThrow('helper-fout 422');
+  });
+
   it('available() checkt /health', async () => {
     const engine = createHelperEngine({
       fetchImpl: () => okResponse({ status: 'ok', engines: { edge: true, piper: true } }),

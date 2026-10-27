@@ -104,7 +104,10 @@ function onProgress(event) {
 function onEvent(event) {
   if (!active && event.type !== 'init') return;
   switch (event.type) {
-    case 'init': bar?.setRate(event.rate); break;
+    case 'init':
+      if (event.rate != null) bar?.setRate(event.rate);
+      if (event.engine) bar?.setEngine(event.engine);
+      break;
     case 'sentence-start': onSentenceStart(event); break;
     case 'progress': onProgress(event); break;
     case 'state': bar?.setPlaying(event.state === 'playing'); break;
@@ -115,7 +118,7 @@ function onEvent(event) {
     case 'error':
       // Helper draait niet: toon de installatie-instructie i.p.v. een kale fout.
       showNotice(event.message === 'helper-offline'
-        ? 'Helper draait niet. Installeer met: pipx install ./helper (zie README)'
+        ? "Helper draait niet. Installeer met: pipx install './helper[piper]' (zie README)"
         : `Voorlezen mislukt: ${event.message}`);
       cleanup();
       break;

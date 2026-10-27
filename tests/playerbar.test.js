@@ -50,6 +50,19 @@ describe('createPlayerBar', () => {
     expect(bar._shadow.querySelector('select[data-a="rate"]').value).toBe('1.5');
   });
 
+  it('setEngine() zet icoon en tooltip: wolkje = cloud, huisje = lokaal', () => {
+    const { bar } = makeBar();
+    const engineEl = bar._shadow.querySelector('.engine');
+    bar.setEngine('piper');
+    expect(engineEl.textContent).toBe('🏠');
+    expect(engineEl.title).toContain('lokaal');
+    expect(engineEl.title).toContain('Piper');
+    bar.setEngine('edge');
+    expect(engineEl.textContent).toBe('☁');
+    expect(engineEl.title).toContain('cloud');
+    expect(engineEl.title).toContain('Edge TTS');
+  });
+
   it('destroy() verwijdert de balk uit het document', () => {
     const { bar } = makeBar();
     bar.destroy();

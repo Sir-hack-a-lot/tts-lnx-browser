@@ -54,7 +54,9 @@ export function createHelperEngine({ fetchImpl = globalThis.fetch, baseUrl = 'ht
         let detail = `helper-fout ${res.status}`;
         try {
           const body = await res.json();
-          if (body?.detail) detail = body.detail;
+          // FastAPI stuurt bij een validatiefout (422) detail als array van
+          // objecten; alleen een string-detail is bruikbaar als melding.
+          if (typeof body?.detail === 'string') detail = body.detail;
         } catch { /* body was geen JSON; val terug op statuscode */ }
         throw new Error(detail);
       }

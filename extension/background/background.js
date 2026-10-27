@@ -88,8 +88,6 @@ browser.runtime.onMessage.addListener((msg, sender) => {
       const s = await settings.load();
       // Ondertussen een STOP of nieuwe START binnengekomen: niet starten.
       if (token !== sessionToken) return;
-      // Laat de playerbar de ingestelde snelheid tonen vóór de eerste player-event.
-      browser.tabs.sendMessage(tabId, { type: MSG.EVENT, event: { type: 'init', rate: s.rate } }).catch(() => {});
       // Kies de engine (edge/piper) vóór de stem: de voice-id's zijn
       // engine-afhankelijk. Faalt dit (helper offline, piper afwezig), dan
       // gaat de fout als error-event naar de playerbar.
@@ -105,6 +103,12 @@ browser.runtime.onMessage.addListener((msg, sender) => {
         return;
       }
       if (token !== sessionToken) return;
+      // Laat de playerbar de ingestelde snelheid en de gekozen engine tonen
+      // vóór de eerste player-event (init = rate + engine-indicator).
+      browser.tabs.sendMessage(tabId, {
+        type: MSG.EVENT,
+        event: { type: 'init', rate: s.rate, engine: engineNaam },
+      }).catch(() => {});
       ensurePlayer(await routerPromise).start({
         sentences: msg.sentences,
         voice: resolveVoice(msg.lang, s.voiceOverrides, engineNaam),
