@@ -1,6 +1,6 @@
 {
   "name": "tts-lnx-browser",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "type": "module",
   "description": "Firefox-extensie die webpagina's voorleest met natuurlijke stemmen",
