@@ -15,6 +15,10 @@
     "message": "Lees pagina voor of stop",
     "description": "Beschrijving van de sneltoets."
   },
+  "contextMenuReadSelection": {
+    "message": "Lees selectie voor",
+    "description": "Contextmenu-item bij een tekstselectie."
+  },
 
   "playerbarLabel": {
     "message": "Voorleesbediening",

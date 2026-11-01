@@ -1,6 +1,7 @@
 // Applicatie-entry in de pagina: extractie, highlighting, playerbar, seek.
 import { MSG, CONTROL } from '../shared/messages.js';
 import { extractArticle, locateSentence } from './extractor.js';
+import { splitSentences } from './sentence-split.js';
 import { detectLanguage } from './language-detect.js';
 import { createHighlighter, HIGHLIGHT_CSS } from './highlighter.js';
 import { createPlayerBar } from './playerbar.js';
@@ -45,14 +46,18 @@ function cleanup() {
   active = false;
 }
 
-function startReading() {
-  const { sentences: found } = extractArticle(document);
+// Start het voorlezen. Zonder argument: het hele artikel (Readability).
+// Met selectionText: alleen die tekst (rechtermuisknop op een selectie).
+function startReading(selectionText = null) {
+  const found = selectionText !== null
+    ? splitSentences(selectionText).map((text, id) => ({ id, text }))
+    : extractArticle(document).sentences;
   if (!found.length) {
     showNotice(msg('noticeNoText'));
     return;
   }
   sentences = found;
-  const sample = found.slice(0, 10).map((s) => s.text).join(' ');
+  const sample = selectionText ?? found.slice(0, 10).map((s) => s.text).join(' ');
   const lang = document.documentElement.lang?.slice(0, 2).toLowerCase()
     || detectLanguage(sample) || null;
 
@@ -138,14 +143,22 @@ document.addEventListener('click', (ev) => {
   if (hit) send({ type: MSG.CONTROL, action: CONTROL.SEEK, value: hit.id });
 }, true);
 
-browser.runtime.onMessage.addListener((msg) => {
-  if (msg.type === MSG.TOGGLE) {
+browser.runtime.onMessage.addListener((message) => {
+  if (message.type === MSG.TOGGLE) {
     if (active) { send({ type: MSG.CONTROL, action: CONTROL.STOP }); cleanup(); }
     else startReading();
     return false;
   }
-  if (msg.type === MSG.EVENT) {
-    onEvent(msg.event);
+  if (message.type === MSG.READ_SELECTION) {
+    const selection = String(window.getSelection() ?? '').replace(/\s+/g, ' ').trim();
+    if (!selection) return false;
+    // Een lopende sessie stoppen voordat de selectie-voorlezing begint.
+    if (active) { send({ type: MSG.CONTROL, action: CONTROL.STOP }); cleanup(); }
+    startReading(selection);
+    return false;
+  }
+  if (message.type === MSG.EVENT) {
+    onEvent(message.event);
     return false;
   }
   return false;

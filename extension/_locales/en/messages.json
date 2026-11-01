@@ -15,6 +15,10 @@
     "message": "Read the page aloud or stop",
     "description": "Description of the keyboard shortcut."
   },
+  "contextMenuReadSelection": {
+    "message": "Read selection aloud",
+    "description": "Context-menu item shown when text is selected."
+  },
 
   "playerbarLabel": {
     "message": "Read-aloud controls",

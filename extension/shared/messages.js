@@ -4,6 +4,7 @@ export const MSG = {
   START: 'tts.start',     // content → background: {sentences, lang}
   CONTROL: 'tts.control', // content → background: {action, value?}
   EVENT: 'tts.event',     // background → content: {event}
+  READ_SELECTION: 'tts.read-selection', // background → content: contextmenu op selectie
 };
 
 export const CONTROL = {

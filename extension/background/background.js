@@ -68,6 +68,20 @@ async function toggle(tab) {
   }
 }
 
+// Rechtermuisknop op een tekstselectie: lees alleen de selectie voor.
+// Het menu-item is alleen zichtbaar als er tekst geselecteerd is.
+const MENU_ID = 'tts-read-selection';
+browser.contextMenus?.create({
+  id: MENU_ID,
+  title: browser.i18n.getMessage('contextMenuReadSelection'),
+  contexts: ['selection'],
+});
+browser.contextMenus?.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === MENU_ID && tab?.id != null) {
+    browser.tabs.sendMessage(tab.id, { type: MSG.READ_SELECTION }).catch(() => {});
+  }
+});
+
 browser.browserAction.onClicked.addListener(toggle);
 browser.commands?.onCommand.addListener(async (command) => {
   if (command !== 'toggle-read') return;

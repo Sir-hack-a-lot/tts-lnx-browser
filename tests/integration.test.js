@@ -112,4 +112,43 @@ describe('content-flow (integratie)', () => {
     expect(sent).toContainEqual({ type: MSG.CONTROL, action: CONTROL.STOP, value: undefined });
     expect(document.getElementById('tts-lnx-playerbar')).toBeNull();
   });
+
+  it('leest alleen de selectie voor bij READ_SELECTION (rechtermuisknop)', () => {
+    // Selecteer de tweede alinea ("De muis rende hard weg. De kat bleef zitten.").
+    const p = [...document.querySelectorAll('p')].find((el) => el.textContent.includes('De muis rende'));
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    listener({ type: MSG.READ_SELECTION });
+    const start = sent.find((m) => m.type === MSG.START);
+    expect(start).toBeTruthy();
+    expect(start.sentences.map((s) => s.text))
+      .toEqual(['De muis rende hard weg.', 'De kat bleef zitten.']);
+    expect(document.getElementById('tts-lnx-playerbar')).not.toBeNull();
+    sel.removeAllRanges();
+  });
+
+  it('stopt een lopende sessie voordat de selectie-voorlezing start', () => {
+    listener({ type: MSG.TOGGLE }); // start hele artikel
+    const p = [...document.querySelectorAll('p')].find((el) => el.textContent.includes('Herhaling'));
+    const range = document.createRange();
+    range.selectNodeContents(p);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    sent.length = 0;
+    listener({ type: MSG.READ_SELECTION });
+    expect(sent[0]).toEqual({ type: MSG.CONTROL, action: CONTROL.STOP, value: undefined });
+    const start = sent.find((m) => m.type === MSG.START);
+    expect(start.sentences.map((s) => s.text)).toEqual(['Herhaling komt voor.', 'Herhaling komt voor.']);
+    sel.removeAllRanges();
+  });
+
+  it('doet niets bij READ_SELECTION zonder selectie', () => {
+    listener({ type: MSG.READ_SELECTION });
+    expect(sent).toHaveLength(0);
+    expect(document.getElementById('tts-lnx-playerbar')).toBeNull();
+  });
 });
