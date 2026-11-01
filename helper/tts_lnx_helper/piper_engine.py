@@ -1,9 +1,12 @@
 """Piper TTS-engine: lokale synthese met piper-tts (onnx), geen netwerk nodig
 zodra het stemmodel eenmaal gedownload is.
 
-Levert WAV-bytes en een lege boundaries-lijst (piper geeft geen
-woordtijdstempels), volgens hetzelfde (audio, boundaries)-contract als
-edge_engine.synthesize.
+Levert WAV-bytes en een boundaries-lijst volgens hetzelfde
+(audio, boundaries)-contract als edge_engine.synthesize. Piper geeft geen
+woordtijdstempels; de boundaries worden daarom GESCHAT uit de tekst en de
+gemeten WAV-duur (proportioneel naar woordlengte, met extra gewicht voor een
+leesteken-pauze). De schatting is goed genoeg voor woord-highlighting, maar
+geen exacte alignering.
 
 VOICE_DIR is een module-constante maar wordt op aanroepmoment gelezen
 (ledger Ruling 2): functies verwijzen naar de globale naam, dus tests kunnen
@@ -11,6 +14,7 @@ VOICE_DIR is een module-constante maar wordt op aanroepmoment gelezen
 """
 
 import io
+import re
 import urllib.request
 import wave
 from pathlib import Path
@@ -26,6 +30,40 @@ _HF_BASE = "https://huggingface.co/rhasspy/piper-voices/resolve/main"
 DOWNLOAD_TIMEOUT = 60
 
 _voice_cache = {}
+
+# Letters/cijfers tellen mee voor de spreekduur van een woord.
+_LETTER_RE = re.compile(r"[^\W_]", re.UNICODE)
+
+# Leesteken aan het einde van een woord geeft een gesproken pauze; die krijgt
+# extra gewicht zodat het volgende woord geschat later start.
+_PUNCT_WEIGHT = {",": 2, ";": 2, ":": 2, ".": 4, "!": 4, "?": 4, "…": 4}
+
+
+def estimate_word_boundaries(text, duration_ms):
+    """Schat woord-timing: elk woord krijgt een aandeel van `duration_ms`
+    naar rato van zijn aantal letters, plus extra gewicht voor een
+    eind-leesteken (pauze). Geeft dezelfde vorm als edge levert:
+    [{text, offsetMs, durationMs}]."""
+    woorden = str(text).split()
+    if not woorden or duration_ms <= 0:
+        return []
+    gewichten = []
+    for woord in woorden:
+        gewicht = max(1, len(_LETTER_RE.findall(woord)))
+        gewicht += _PUNCT_WEIGHT.get(woord[-1], 0)
+        gewichten.append(gewicht)
+    totaal = sum(gewichten)
+    boundaries = []
+    offset = 0.0
+    for woord, gewicht in zip(woorden, gewichten):
+        duur = duration_ms * gewicht / totaal
+        boundaries.append({
+            "text": woord,
+            "offsetMs": round(offset),
+            "durationMs": round(duur),
+        })
+        offset += duur
+    return boundaries
 
 
 def length_scale(rate):
@@ -80,9 +118,11 @@ def load_voice(model_pad):
 def synthesize(text, voice, rate):
     """Synthetiseer `text` met piper-stem `voice` en tempo `rate`.
 
-    Geeft (wav-bytes, []) — piper levert geen word-boundaries. Alle chunks
-    worden in geheugen tot één WAV samengevoegd; er wordt geen paginatekst of
-    audio naar schijf geschreven (alleen het stemmodel zelf staat op schijf).
+    Geeft (wav-bytes, boundaries) — piper levert geen word-boundaries, dus die
+    worden geschat uit de tekst en de gemeten audioduur (zie
+    estimate_word_boundaries). Alle chunks worden in geheugen tot één WAV
+    samengevoegd; er wordt geen paginatekst of audio naar schijf geschreven
+    (alleen het stemmodel zelf staat op schijf).
     """
     from piper.config import SynthesisConfig  # lazy: piper is een optionele extra
     stem = load_voice(ensure_voice(voice))
@@ -90,6 +130,8 @@ def synthesize(text, voice, rate):
 
     buffer = io.BytesIO()
     eerste_chunk = True
+    totaal_frames = 0
+    framerate = 22050  # fallback als er geen chunks zijn
     with wave.open(buffer, "wb") as wav:
         for chunk in stem.synthesize(text, syn_config=config):
             if eerste_chunk:
@@ -97,12 +139,16 @@ def synthesize(text, voice, rate):
                 wav.setnchannels(chunk.sample_channels)
                 wav.setsampwidth(chunk.sample_width)
                 wav.setframerate(chunk.sample_rate)
+                framerate = chunk.sample_rate
                 eerste_chunk = False
             wav.writeframes(chunk.audio_int16_bytes)
+            totaal_frames += len(chunk.audio_int16_bytes) // (
+                chunk.sample_width * chunk.sample_channels)
         if eerste_chunk:
             # Geen chunks (bijv. lege tekst): schrijf een standaardheader zodat
             # wave.close() geen wave.Error gooit en er een valide lege WAV uitkomt.
             wav.setnchannels(1)
             wav.setsampwidth(2)
-            wav.setframerate(22050)
-    return buffer.getvalue(), []
+            wav.setframerate(framerate)
+    duur_ms = totaal_frames / framerate * 1000
+    return buffer.getvalue(), estimate_word_boundaries(text, duur_ms)

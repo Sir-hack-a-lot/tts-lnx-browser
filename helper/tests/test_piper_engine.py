@@ -13,7 +13,7 @@ def test_rate_naar_length_scale():
     assert piper_engine.length_scale(9.0) == 0.5   # clamp
 
 
-def test_synthesize_geeft_wav_zonder_boundaries(monkeypatch, tmp_path):
+def test_synthesize_geeft_wav_met_geschatte_boundaries(monkeypatch, tmp_path):
     # Fake volgt de echte piper-tts 1.x API: voice.synthesize(text, syn_config)
     # yieldt AudioChunk-achtige objecten met audio_int16_bytes + sample_rate.
     class FakeVoice:
@@ -33,9 +33,12 @@ def test_synthesize_geeft_wav_zonder_boundaries(monkeypatch, tmp_path):
     fake = FakeVoice()
     monkeypatch.setattr(piper_engine, "ensure_voice", lambda v: tmp_path / "x.onnx")
     monkeypatch.setattr(piper_engine, "load_voice", lambda p: fake)
-    wav, boundaries = piper_engine.synthesize("Hallo.", "nl_NL-mls-medium", 1.5)
+    wav, boundaries = piper_engine.synthesize("Hallo wereld.", "nl_NL-mls-medium", 1.5)
     assert wav[:4] == b"RIFF"
-    assert boundaries == []
+    # Twee woorden -> twee geschatte boundaries binnen de (kleine) WAV-duur.
+    assert [b["text"] for b in boundaries] == ["Hallo", "wereld."]
+    assert boundaries[0]["offsetMs"] == 0
+    assert boundaries[1]["offsetMs"] >= boundaries[0]["offsetMs"]
     # rate 1.5 -> length_scale 2/3 wordt doorgegeven aan piper
     assert fake.gezien_syn_config is not None
     assert fake.gezien_syn_config.length_scale == pytest.approx(1 / 1.5)
@@ -53,6 +56,35 @@ def test_synthesize_zonder_chunks_geeft_lege_wav(monkeypatch, tmp_path):
     wav, boundaries = piper_engine.synthesize("", "nl_NL-mls-medium", 1.0)
     assert wav[:4] == b"RIFF"
     assert boundaries == []
+
+
+def test_estimate_word_boundaries_contract():
+    b = piper_engine.estimate_word_boundaries("Eén twee drie vier.", 2000)
+    assert len(b) == 4
+    # Offsets zijn monotoon stijgend en beginnen op 0 ...
+    offsets = [x["offsetMs"] for x in b]
+    assert offsets[0] == 0
+    assert offsets == sorted(offsets)
+    # ... en samen dekken ze de hele audioduur (afrondingsmarge van 1ms/woord).
+    eind = b[-1]["offsetMs"] + b[-1]["durationMs"]
+    assert abs(eind - 2000) <= len(b)
+
+
+def test_estimate_word_boundaries_leesteken_krijgt_pauzegewicht():
+    # 'kort,' en 'langwoordsje' hebben samen evenveel letters als 2× 'kort',
+    # maar het komma-woord is door de pauze langer dan een gewoon kort woord.
+    b = piper_engine.estimate_word_boundaries("kort, kort", 1000)
+    assert b[0]["durationMs"] > b[1]["durationMs"]
+    b2 = piper_engine.estimate_word_boundaries("kort. kort", 1000)
+    assert b2[0]["durationMs"] > b[0]["durationMs"]  # punt > komma
+
+
+def test_estimate_word_boundaries_randgevallen():
+    assert piper_engine.estimate_word_boundaries("", 1000) == []
+    assert piper_engine.estimate_word_boundaries("hallo", 0) == []
+    # Alleen-leesteken-woord crasht niet en krijgt minimaal gewicht 1.
+    b = piper_engine.estimate_word_boundaries("…", 500)
+    assert b == [{"text": "…", "offsetMs": 0, "durationMs": 500}]
 
 
 def test_fetch_gebruikt_timeout(monkeypatch):
