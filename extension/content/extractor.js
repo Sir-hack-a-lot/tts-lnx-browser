@@ -8,13 +8,16 @@ const BLOCK_SELECTOR = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,td,th,capti
 
 export function extractArticle(doc, { maxSentences = 500 } = {}) {
   const clone = doc.cloneNode(true);
-  const article = new Readability(clone).parse();
+  // content als DOM-node i.p.v. HTML-string (eigen serializer): het artikel-
+  // fragment wordt dan geadopteerd via appendChild en hoeft niet opnieuw als
+  // HTML geparsed te worden — geen innerHTML in eigen code (AMO-waarschuwing).
+  const article = new Readability(clone, { serializer: (el) => el }).parse();
 
   const container = doc.createElement('div');
   let title = null;
   if (article?.content) {
     title = article.title || null;
-    container.innerHTML = article.content;
+    container.appendChild(article.content);
   } else {
     // Fallback: platte bodytekst (Readability vond geen artikel).
     container.textContent = doc.body?.textContent || '';

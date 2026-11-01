@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { createPlayerBar } from '../extension/content/playerbar.js';
 import { CONTROL } from '../extension/shared/messages.js';
+import { i18nMock } from './helpers/i18n.js';
+
+beforeEach(() => {
+  globalThis.browser = { i18n: i18nMock() };
+});
 
 function makeBar() {
   const calls = [];
@@ -55,7 +60,7 @@ describe('createPlayerBar', () => {
     const engineEl = bar._shadow.querySelector('.engine');
     bar.setEngine('piper');
     expect(engineEl.textContent).toBe('🏠');
-    expect(engineEl.title).toContain('lokaal');
+    expect(engineEl.title).toContain('local');
     expect(engineEl.title).toContain('Piper');
     bar.setEngine('edge');
     expect(engineEl.textContent).toBe('☁');

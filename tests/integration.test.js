@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { MSG, CONTROL } from '../extension/shared/messages.js';
+import { i18nMock } from './helpers/i18n.js';
 
 describe('content-flow (integratie)', () => {
   let sent;
@@ -22,6 +23,7 @@ describe('content-flow (integratie)', () => {
       .replace(/[\s\S]*<html[^>]*>/, '').replace(/<\/html>[\s\S]*/, '');
     sent = [];
     globalThis.browser = {
+      i18n: i18nMock(),
       runtime: {
         onMessage: { addListener: (fn) => { listener = fn; } },
         sendMessage: (m) => { sent.push(m); return Promise.resolve(); },
@@ -90,7 +92,7 @@ describe('content-flow (integratie)', () => {
     expect(document.getElementById('tts-lnx-playerbar')).not.toBeNull();
     listener({ type: MSG.EVENT, event: { type: 'error', message: 'helper-offline' } });
     expect(document.body.textContent)
-      .toContain("Helper draait niet. Installeer met: pipx install './helper[piper]' (zie README)");
+      .toContain("Helper is not running. Install with: pipx install './helper[piper]' (see README)");
     expect(document.getElementById('tts-lnx-playerbar')).toBeNull();
   });
 

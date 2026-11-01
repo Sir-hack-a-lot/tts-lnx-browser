@@ -1,0 +1,135 @@
+{
+  "extensionName": {
+    "message": "TTS LNX Browser",
+    "description": "Name of the extension, shown in the add-ons manager and the store."
+  },
+  "extensionDescription": {
+    "message": "Reads web pages aloud with natural-sounding voices on Linux.",
+    "description": "Short description of the extension."
+  },
+  "browserActionTitle": {
+    "message": "Read page aloud",
+    "description": "Tooltip of the toolbar button."
+  },
+  "commandToggleDescription": {
+    "message": "Read the page aloud or stop",
+    "description": "Description of the keyboard shortcut."
+  },
+
+  "playerbarLabel": {
+    "message": "Read-aloud controls",
+    "description": "Accessibility label of the player toolbar."
+  },
+  "playerbarPrev": {
+    "message": "Previous sentence",
+    "description": "Label of the previous-sentence button."
+  },
+  "playerbarPause": {
+    "message": "Pause",
+    "description": "Label of the pause button."
+  },
+  "playerbarResume": {
+    "message": "Resume",
+    "description": "Label of the pause button while paused."
+  },
+  "playerbarNext": {
+    "message": "Next sentence",
+    "description": "Label of the next-sentence button."
+  },
+  "playerbarStop": {
+    "message": "Stop",
+    "description": "Label of the stop button."
+  },
+  "playerbarRate": {
+    "message": "Speed",
+    "description": "Label of the playback-speed dropdown."
+  },
+  "engineTooltipCloud": {
+    "message": "Engine: cloud (Edge TTS via helper)",
+    "description": "Tooltip of the engine indicator when the cloud engine is active."
+  },
+  "engineTooltipLocal": {
+    "message": "Engine: local (Piper)",
+    "description": "Tooltip of the engine indicator when the local engine is active."
+  },
+
+  "noticeNoText": {
+    "message": "No readable text found on this page.",
+    "description": "Notice shown when the page contains no readable text."
+  },
+  "noticeHelperOffline": {
+    "message": "Helper is not running. Install with: pipx install './helper[piper]' (see README)",
+    "description": "Notice shown when the local helper cannot be reached."
+  },
+  "noticeReadFailed": {
+    "message": "Reading aloud failed: $1",
+    "description": "Notice shown when playback fails; $1 is the error message."
+  },
+
+  "optionsTitle": {
+    "message": "TTS settings",
+    "description": "Title of the options page."
+  },
+  "optionsHeading": {
+    "message": "Read-aloud settings",
+    "description": "Main heading of the options page."
+  },
+  "optionsRateLabel": {
+    "message": "Default speed",
+    "description": "Label of the default-speed dropdown on the options page."
+  },
+  "optionsVoicesLegend": {
+    "message": "Voice per language",
+    "description": "Legend of the voices fieldset on the options page."
+  },
+  "optionsEngineLegend": {
+    "message": "Engine",
+    "description": "Legend of the engine fieldset on the options page."
+  },
+  "optionsEngineCloud": {
+    "message": "Cloud (Edge TTS — best-quality voices)",
+    "description": "Label of the cloud engine radio button."
+  },
+  "optionsEngineLocal": {
+    "message": "Local (Piper — offline, your own voices)",
+    "description": "Label of the local engine radio button."
+  },
+  "optionsEngineLocalFirst": {
+    "message": "Local first, cloud as fallback",
+    "description": "Label of the local-first engine radio button."
+  },
+  "optionsPrivacyNote": {
+    "message": "With cloud (Edge), the text being read is sent to Microsoft via the local helper; with local (Piper), the text stays entirely on your computer.",
+    "description": "Privacy note below the engine choice."
+  },
+  "optionsHelperLegend": {
+    "message": "Local helper",
+    "description": "Legend of the helper-status fieldset."
+  },
+  "optionsHelperLoading": {
+    "message": "Checking helper status…",
+    "description": "Placeholder while the helper status is being fetched."
+  },
+  "optionsSaved": {
+    "message": "Saved ✓",
+    "description": "Confirmation shown after a setting is saved."
+  },
+  "optionsHelperReachable": {
+    "message": "Helper: reachable",
+    "description": "Helper status when the helper responds but the voice count is unknown."
+  },
+  "optionsHelperReachableVoices": {
+    "message": "Helper: reachable — $1 Piper voice(s) installed",
+    "description": "Helper status with the number of installed Piper voices; $1 is the count."
+  },
+  "optionsHelperUnreachable": {
+    "message": "Helper: unreachable (is the local helper running?)",
+    "description": "Helper status when the helper cannot be reached."
+  },
+
+  "langNl": { "message": "Dutch", "description": "Name of the Dutch language in the voice list." },
+  "langEn": { "message": "English", "description": "Name of the English language in the voice list." },
+  "langDe": { "message": "German", "description": "Name of the German language in the voice list." },
+  "langFr": { "message": "French", "description": "Name of the French language in the voice list." },
+  "langEs": { "message": "Spanish", "description": "Name of the Spanish language in the voice list." }
+}

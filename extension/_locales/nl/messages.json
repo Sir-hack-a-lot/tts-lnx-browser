@@ -1,0 +1,135 @@
+{
+  "extensionName": {
+    "message": "TTS LNX Browser",
+    "description": "Naam van de extensie, getoond in de add-onbeheerder en de winkel."
+  },
+  "extensionDescription": {
+    "message": "Leest webpagina's voor met natuurlijke stemmen op Linux.",
+    "description": "Korte beschrijving van de extensie."
+  },
+  "browserActionTitle": {
+    "message": "Lees pagina voor",
+    "description": "Tooltip van de werkbalkknop."
+  },
+  "commandToggleDescription": {
+    "message": "Lees pagina voor of stop",
+    "description": "Beschrijving van de sneltoets."
+  },
+
+  "playerbarLabel": {
+    "message": "Voorleesbediening",
+    "description": "Toegankelijkheidslabel van de afspeelbalk."
+  },
+  "playerbarPrev": {
+    "message": "Vorige zin",
+    "description": "Label van de knop 'vorige zin'."
+  },
+  "playerbarPause": {
+    "message": "Pauzeren",
+    "description": "Label van de pauzeknop."
+  },
+  "playerbarResume": {
+    "message": "Hervatten",
+    "description": "Label van de pauzeknop tijdens pauze."
+  },
+  "playerbarNext": {
+    "message": "Volgende zin",
+    "description": "Label van de knop 'volgende zin'."
+  },
+  "playerbarStop": {
+    "message": "Stoppen",
+    "description": "Label van de stopknop."
+  },
+  "playerbarRate": {
+    "message": "Snelheid",
+    "description": "Label van de snelheidskeuze."
+  },
+  "engineTooltipCloud": {
+    "message": "Engine: cloud (Edge TTS via helper)",
+    "description": "Tooltip van de engine-indicator bij de cloud-engine."
+  },
+  "engineTooltipLocal": {
+    "message": "Engine: lokaal (Piper)",
+    "description": "Tooltip van de engine-indicator bij de lokale engine."
+  },
+
+  "noticeNoText": {
+    "message": "Geen voorleesbare tekst gevonden op deze pagina.",
+    "description": "Melding als de pagina geen voorleesbare tekst bevat."
+  },
+  "noticeHelperOffline": {
+    "message": "Helper draait niet. Installeer met: pipx install './helper[piper]' (zie README)",
+    "description": "Melding als de lokale helper onbereikbaar is."
+  },
+  "noticeReadFailed": {
+    "message": "Voorlezen mislukt: $1",
+    "description": "Melding als het voorlezen mislukt; $1 is de foutmelding."
+  },
+
+  "optionsTitle": {
+    "message": "TTS-instellingen",
+    "description": "Titel van de optiepagina."
+  },
+  "optionsHeading": {
+    "message": "Voorlees-instellingen",
+    "description": "Kop van de optiepagina."
+  },
+  "optionsRateLabel": {
+    "message": "Standaardsnelheid",
+    "description": "Label van de snelheidskeuze op de optiepagina."
+  },
+  "optionsVoicesLegend": {
+    "message": "Stem per taal",
+    "description": "Titel van het stemmenblok op de optiepagina."
+  },
+  "optionsEngineLegend": {
+    "message": "Engine",
+    "description": "Titel van het engineblok op de optiepagina."
+  },
+  "optionsEngineCloud": {
+    "message": "Cloud (Edge TTS — mooiste stemmen)",
+    "description": "Label van de cloud-engine-keuze."
+  },
+  "optionsEngineLocal": {
+    "message": "Lokaal (Piper — offline, eigen stemmen)",
+    "description": "Label van de lokale-engine-keuze."
+  },
+  "optionsEngineLocalFirst": {
+    "message": "Lokaal eerst, cloud als reserve",
+    "description": "Label van de lokaal-eerst-keuze."
+  },
+  "optionsPrivacyNote": {
+    "message": "Bij cloud (Edge) gaat de voorgelezen tekst via de lokale helper naar Microsoft; bij lokaal (Piper) blijft de tekst volledig op je computer.",
+    "description": "Privacytoelichting onder de enginekeuze."
+  },
+  "optionsHelperLegend": {
+    "message": "Lokale helper",
+    "description": "Titel van het helper-statusblok."
+  },
+  "optionsHelperLoading": {
+    "message": "Helper-status wordt opgehaald…",
+    "description": "Plaatshouder terwijl de helper-status wordt opgehaald."
+  },
+  "optionsSaved": {
+    "message": "Opgeslagen ✓",
+    "description": "Bevestiging na het opslaan van een instelling."
+  },
+  "optionsHelperReachable": {
+    "message": "Helper: bereikbaar",
+    "description": "Helper-status als de helper antwoordt maar het aantal stemmen onbekend is."
+  },
+  "optionsHelperReachableVoices": {
+    "message": "Helper: bereikbaar — $1 piper-stem(men) geïnstalleerd",
+    "description": "Helper-status met het aantal geïnstalleerde piper-stemmen; $1 is het aantal."
+  },
+  "optionsHelperUnreachable": {
+    "message": "Helper: niet bereikbaar (draait de lokale helper?)",
+    "description": "Helper-status als de helper onbereikbaar is."
+  },
+
+  "langNl": { "message": "Nederlands", "description": "Naam van het Nederlands in de stemmenlijst." },
+  "langEn": { "message": "Engels", "description": "Naam van het Engels in de stemmenlijst." },
+  "langDe": { "message": "Duits", "description": "Naam van het Duits in de stemmenlijst." },
+  "langFr": { "message": "Frans", "description": "Naam van het Frans in de stemmenlijst." },
+  "langEs": { "message": "Spaans", "description": "Naam van het Spaans in de stemmenlijst." }
+}

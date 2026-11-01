@@ -18,4 +18,12 @@ describe('manifest permissions', () => {
   it('heeft een host-permissie voor de helper op localhost', () => {
     expect(manifest.permissions.some((p) => p.startsWith('http://127.0.0.1/'))).toBe(true);
   });
+
+  // AMO vereist voor nieuwe extensies een dataverzameling-verklaring. Wij
+  // sturen paginatekst naar Microsoft als de cloud-engine actief is, dus
+  // websiteContent is de eerlijke (verplichte) categorie.
+  it('verklaart websiteContent als verplichte dataverzameling', () => {
+    expect(manifest.browser_specific_settings.gecko.data_collection_permissions)
+      .toEqual({ required: ['websiteContent'] });
+  });
 });

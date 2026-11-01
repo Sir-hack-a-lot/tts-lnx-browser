@@ -1,5 +1,9 @@
 // Bedieningsbalk in een closed shadow DOM, zodat pagina-CSS niet meekijkt.
+// De balk wordt met createElement opgebouwd (geen innerHTML): alle teksten
+// zijn vertaalde strings of eigen constanten, dus DOM-bouw is net zo
+// duidelijk en houdt de AMO-linter stil.
 import { CONTROL } from '../shared/messages.js';
+import { msg, uiLanguage } from '../shared/i18n.js';
 
 const BAR_CSS = `
   .bar {
@@ -18,31 +22,58 @@ const BAR_CSS = `
   .engine { font-size: 16px; margin-left: 4px; }
 `;
 
+const RATES = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
 export function createPlayerBar(doc, { onControl }) {
   const host = doc.createElement('div');
   host.id = 'tts-lnx-playerbar';
   const shadow = host.attachShadow({ mode: 'closed' });
-  shadow.innerHTML = `
-    <style>${BAR_CSS}</style>
-    <div class="bar" role="toolbar" aria-label="Voorleesbediening">
-      <button data-a="prev" aria-label="Vorige zin" title="Vorige zin">⏮</button>
-      <button data-a="pause" aria-label="Pauzeren" title="Pauzeren">⏸</button>
-      <button data-a="next" aria-label="Volgende zin" title="Volgende zin">⏭</button>
-      <button data-a="stop" aria-label="Stoppen" title="Stoppen">⏹</button>
-      <select data-a="rate" aria-label="Snelheid">
-        <option value="0.5">0,5×</option>
-        <option value="0.75">0,75×</option>
-        <option value="1" selected>1×</option>
-        <option value="1.25">1,25×</option>
-        <option value="1.5">1,5×</option>
-        <option value="2">2×</option>
-      </select>
-      <span class="engine" title="Engine: cloud (Edge TTS via helper)">☁</span>
-    </div>`;
+
+  const style = doc.createElement('style');
+  style.textContent = BAR_CSS;
+  shadow.appendChild(style);
+
+  const barEl = doc.createElement('div');
+  barEl.className = 'bar';
+  barEl.setAttribute('role', 'toolbar');
+  barEl.setAttribute('aria-label', msg('playerbarLabel'));
+  shadow.appendChild(barEl);
+
+  const addButton = (action, labelKey, icon) => {
+    const btn = doc.createElement('button');
+    btn.dataset.a = action;
+    btn.setAttribute('aria-label', msg(labelKey));
+    btn.title = msg(labelKey);
+    btn.textContent = icon;
+    barEl.appendChild(btn);
+    return btn;
+  };
+  addButton('prev', 'playerbarPrev', '⏮');
+  const pauseBtn = addButton('pause', 'playerbarPause', '⏸');
+  addButton('next', 'playerbarNext', '⏭');
+  addButton('stop', 'playerbarStop', '⏹');
+
+  // Decimaalteken volgt de UI-taal (0,5× in het Nederlands, 0.5× in het Engels).
+  const rateFmt = new Intl.NumberFormat(uiLanguage());
+  const rateSelect = doc.createElement('select');
+  rateSelect.dataset.a = 'rate';
+  rateSelect.setAttribute('aria-label', msg('playerbarRate'));
+  for (const r of RATES) {
+    const opt = doc.createElement('option');
+    opt.value = String(r);
+    opt.textContent = `${rateFmt.format(r)}×`;
+    if (r === 1) opt.selected = true;
+    rateSelect.appendChild(opt);
+  }
+  barEl.appendChild(rateSelect);
+
+  const engineEl = doc.createElement('span');
+  engineEl.className = 'engine';
+  engineEl.title = msg('engineTooltipCloud');
+  engineEl.textContent = '☁';
+  barEl.appendChild(engineEl);
 
   let playing = true;
-  const pauseBtn = shadow.querySelector('[data-a="pause"]');
-  const engineEl = shadow.querySelector('.engine');
 
   shadow.querySelector('[data-a="prev"]').addEventListener('click', () => onControl(CONTROL.PREV));
   shadow.querySelector('[data-a="next"]').addEventListener('click', () => onControl(CONTROL.NEXT));
@@ -50,7 +81,7 @@ export function createPlayerBar(doc, { onControl }) {
   pauseBtn.addEventListener('click', () => {
     onControl(playing ? CONTROL.PAUSE : CONTROL.RESUME);
   });
-  shadow.querySelector('[data-a="rate"]').addEventListener('change', (e) => {
+  rateSelect.addEventListener('change', (e) => {
     onControl(CONTROL.RATE, parseFloat(e.target.value));
   });
 
@@ -60,21 +91,20 @@ export function createPlayerBar(doc, { onControl }) {
     setPlaying(isPlaying) {
       playing = isPlaying;
       pauseBtn.textContent = isPlaying ? '⏸' : '▶';
-      pauseBtn.setAttribute('aria-label', isPlaying ? 'Pauzeren' : 'Hervatten');
+      pauseBtn.setAttribute('aria-label', msg(isPlaying ? 'playerbarPause' : 'playerbarResume'));
     },
     setRate(r) {
-      const select = shadow.querySelector('[data-a="rate"]');
-      select.value = String(r);
+      rateSelect.value = String(r);
     },
     // Engine-indicator: wolkje = cloud (Edge TTS via helper), huisje = lokaal
     // (Piper). De tooltip maakt expliciet waar de paginatekst heen gaat.
     setEngine(engine) {
       if (engine === 'piper') {
         engineEl.textContent = '🏠';
-        engineEl.title = 'Engine: lokaal (Piper)';
+        engineEl.title = msg('engineTooltipLocal');
       } else {
         engineEl.textContent = '☁';
-        engineEl.title = 'Engine: cloud (Edge TTS via helper)';
+        engineEl.title = msg('engineTooltipCloud');
       }
     },
     destroy() { host.remove(); },

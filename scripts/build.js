@@ -12,4 +12,5 @@ await build({ ...shared, entryPoints: ['extension/options/options.js'], outfile:
 await cp('extension/manifest.json', 'dist/manifest.json');
 await cp('extension/options/options.html', 'dist/options/options.html');
 await cp('extension/icons', 'dist/icons', { recursive: true });
+await cp('extension/_locales', 'dist/_locales', { recursive: true });
 console.log('Build OK → dist/');

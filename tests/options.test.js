@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { initOptions } from '../extension/options/options.js';
 import { VOICES } from '../extension/shared/voices.js';
+import { i18nMock } from './helpers/i18n.js';
 
 function fakeStorage(initial = {}) {
   return {
@@ -16,14 +17,15 @@ function fakeStorage(initial = {}) {
 const offlineFetch = () => Promise.reject(new TypeError('fetch failed'));
 
 beforeEach(() => {
+  globalThis.browser = { i18n: i18nMock() };
   // De rate-select heeft zijn opties nodig; anders heeft .value zetten geen effect.
   document.body.innerHTML = `
     <select id="rate">
-      <option value="0.5">0,5×</option>
-      <option value="0.75">0,75×</option>
+      <option value="0.5">0.5×</option>
+      <option value="0.75">0.75×</option>
       <option value="1">1×</option>
-      <option value="1.25">1,25×</option>
-      <option value="1.5">1,5×</option>
+      <option value="1.25">1.25×</option>
+      <option value="1.5">1.5×</option>
       <option value="2">2×</option>
     </select>
     <div id="voices"></div>
@@ -31,7 +33,7 @@ beforeEach(() => {
     <input type="radio" name="pref" value="local">
     <input type="radio" name="pref" value="local-first">
     <p id="helper-status"></p>
-    <p id="saved" hidden>Opgeslagen ✓</p>`;
+    <p id="saved" hidden>Saved ✓</p>`;
 });
 
 describe('initOptions', () => {
@@ -108,13 +110,13 @@ describe('initOptions', () => {
     };
     await initOptions(document, fakeStorage(), { fetchImpl });
     const status = document.getElementById('helper-status').textContent;
-    expect(status).toContain('bereikbaar');
-    expect(status).not.toContain('niet');
+    expect(status).toContain('reachable');
+    expect(status).not.toContain('unreachable');
     expect(status).toContain('2');
   });
 
   it('toont helper-status niet bereikbaar als de helper offline is', async () => {
     await initOptions(document, fakeStorage(), { fetchImpl: offlineFetch });
-    expect(document.getElementById('helper-status').textContent).toContain('niet bereikbaar');
+    expect(document.getElementById('helper-status').textContent).toContain('unreachable');
   });
 });

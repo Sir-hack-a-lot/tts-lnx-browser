@@ -4,6 +4,7 @@ import { extractArticle, locateSentence } from './extractor.js';
 import { detectLanguage } from './language-detect.js';
 import { createHighlighter, HIGHLIGHT_CSS } from './highlighter.js';
 import { createPlayerBar } from './playerbar.js';
+import { msg } from '../shared/i18n.js';
 
 let active = false;
 let sentences = [];
@@ -47,7 +48,7 @@ function cleanup() {
 function startReading() {
   const { sentences: found } = extractArticle(document);
   if (!found.length) {
-    showNotice('Geen voorleesbare tekst gevonden op deze pagina.');
+    showNotice(msg('noticeNoText'));
     return;
   }
   sentences = found;
@@ -118,8 +119,8 @@ function onEvent(event) {
     case 'error':
       // Helper draait niet: toon de installatie-instructie i.p.v. een kale fout.
       showNotice(event.message === 'helper-offline'
-        ? "Helper draait niet. Installeer met: pipx install './helper[piper]' (zie README)"
-        : `Voorlezen mislukt: ${event.message}`);
+        ? msg('noticeHelperOffline')
+        : msg('noticeReadFailed', event.message));
       cleanup();
       break;
   }

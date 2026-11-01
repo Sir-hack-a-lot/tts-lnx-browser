@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>TTS-instellingen</title>
+  <title>TTS settings</title>
   <style>
     body { font: 14px system-ui, sans-serif; max-width: 36em; margin: 2em auto; }
     label { display: block; margin: .8em 0; }
@@ -12,35 +12,35 @@
   </style>
 </head>
 <body>
-  <h1>Voorlees-instellingen</h1>
-  <label>Standaardsnelheid
+  <!-- Statische teksten zijn Engels (default_locale); options.js vervangt ze
+       bij het laden via data-i18n door de vertaling van de browsertaal. -->
+  <h1 data-i18n="optionsHeading">Read-aloud settings</h1>
+  <label><span data-i18n="optionsRateLabel">Default speed</span>
     <select id="rate">
-      <option value="0.5">0,5×</option>
-      <option value="0.75">0,75×</option>
+      <option value="0.5">0.5×</option>
+      <option value="0.75">0.75×</option>
       <option value="1">1×</option>
-      <option value="1.25">1,25×</option>
-      <option value="1.5">1,5×</option>
+      <option value="1.25">1.25×</option>
+      <option value="1.5">1.5×</option>
       <option value="2">2×</option>
     </select>
   </label>
   <fieldset>
-    <legend>Stem per taal</legend>
+    <legend data-i18n="optionsVoicesLegend">Voice per language</legend>
     <div id="voices"></div>
   </fieldset>
   <fieldset>
-    <legend>Engine</legend>
-    <label><input type="radio" name="pref" value="cloud" checked> Cloud (Edge TTS — mooiste stemmen)</label>
-    <label><input type="radio" name="pref" value="local"> Lokaal (Piper — offline, eigen stemmen)</label>
-    <label><input type="radio" name="pref" value="local-first"> Lokaal eerst, cloud als reserve</label>
-    <p class="note">Bij cloud (Edge) gaat de voorgelezen tekst via de lokale
-      helper naar Microsoft; bij lokaal (Piper) blijft de tekst volledig op
-      je computer.</p>
+    <legend data-i18n="optionsEngineLegend">Engine</legend>
+    <label><input type="radio" name="pref" value="cloud" checked> <span data-i18n="optionsEngineCloud">Cloud (Edge TTS — best-quality voices)</span></label>
+    <label><input type="radio" name="pref" value="local"> <span data-i18n="optionsEngineLocal">Local (Piper — offline, your own voices)</span></label>
+    <label><input type="radio" name="pref" value="local-first"> <span data-i18n="optionsEngineLocalFirst">Local first, cloud as fallback</span></label>
+    <p class="note" data-i18n="optionsPrivacyNote">With cloud (Edge), the text being read is sent to Microsoft via the local helper; with local (Piper), the text stays entirely on your computer.</p>
   </fieldset>
   <fieldset>
-    <legend>Lokale helper</legend>
-    <p id="helper-status">Helper-status wordt opgehaald…</p>
+    <legend data-i18n="optionsHelperLegend">Local helper</legend>
+    <p id="helper-status" data-i18n="optionsHelperLoading">Checking helper status…</p>
   </fieldset>
-  <p id="saved" hidden>Opgeslagen ✓</p>
+  <p id="saved" data-i18n="optionsSaved" hidden>Saved ✓</p>
   <script src="options.js"></script>
 </body>
 </html>
