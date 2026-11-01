@@ -53,12 +53,12 @@ TTS LNX Browser
 
 ## Categorieën
 
-- Accessibility (primair)
-- Other (secundair)
+- Other (AMO kent geen "Accessibility"-categorie voor extensies)
 
 ## Tags
 
-read aloud, text to speech, tts, accessibility, linux, piper, edge-tts
+Geen: de AMO-taglijst is een vaste allowlist van 42 populaire tags en geen
+ervan past bij TTS/read-aloud.
 
 ## Privacyverklaring
 
@@ -70,10 +70,19 @@ De extensie is gebundeld met esbuild; bij indiening een zip van de bron
 (`extension/`, `scripts/build.js`, `package.json`) uploaden als
 "Source code" met build-instructie `npm ci && npm run build`.
 
-## Screenshots (nog maken)
+## Screenshots
 
-1. Playerbar op een nieuwsartikel met actieve zin- en woordmarkering.
-2. Optiepagina (engine-keuze + privacyvermelding).
+Klaar: `docs/screenshots/shot1-artikel.png` (voorlezing met zinmarkering en
+playerbar op Wikipedia) en `shot2-opties.png` (optiepagina met
+engine-keuze, privacyvermelding en helper-status).
+
+## Status (2026-11-01)
+
+Uitgevoerd via de AMO-API (`scripts/amo.py`): naam, samenvatting en
+beschrijving (NL+EN, bron: `docs/store-metadata.json`), categorie `other`,
+privacyverklaring (NL+EN via het eula_policy-endpoint) en twee previews met
+bijschriften. Resterend: source-zip aan de listed versie koppelen zodra die
+na validatie bestaat.
 
 ## Homepage / support
 

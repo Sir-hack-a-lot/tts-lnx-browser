@@ -1,0 +1,20 @@
+{
+  "name": {
+    "en-US": "TTS LNX Browser",
+    "nl": "TTS LNX Browser"
+  },
+  "summary": {
+    "en-US": "Reads web pages aloud with natural-sounding voices — the Read Aloud feature Firefox on Linux is missing. Cloud voices (Edge TTS) or fully offline with Piper, via a small local helper.",
+    "nl": "Leest webpagina's voor met natuurlijke stemmen — de Read Aloud die Firefox op Linux mist. Cloud-stemmen (Edge TTS) of volledig offline met Piper, via een kleine lokale helper."
+  },
+  "description": {
+    "en-US": "TTS LNX Browser reads articles and web pages aloud, sentence by sentence, with the current sentence and word highlighted on the page.\n\n- Controls via toolbar button or Alt+R: previous/next sentence, pause, speed.\n- Click a paragraph to start reading from there.\n- Select text and choose \"Read selection aloud\" from the right-click menu.\n- Two engines: cloud (Edge TTS via Microsoft, best-quality voices) or local (Piper, fully offline).\n- Bilingual: English and Dutch.\n\nThe extension requires a small local helper (pipx install './helper[piper]', see README) that runs on your own computer. With the cloud engine, the text being read is sent to Microsoft; with the local engine, everything stays on your computer. See the privacy policy.",
+    "nl": "TTS LNX Browser leest artikelen en webpagina's voor, zin voor zin, met de voorgelezen zin en het actieve woord gemarkeerd op de pagina.\n\n- Bediening via werkbalkknop of Alt+R: vorige/volgende zin, pauze, tempo.\n- Klik op een alinea om vanaf daar te beginnen.\n- Selecteer tekst en kies \"Lees selectie voor\" in het rechtermuisknopmenu.\n- Twee engines: cloud (Edge TTS via Microsoft, mooiste stemmen) of lokaal (Piper, volledig offline).\n- Meertalig: Nederlands en Engels.\n\nDe extensie vereist een kleine lokale helper (pipx install './helper[piper]', zie README) die op je eigen computer draait. Bij de cloud-engine gaat de voorgelezen tekst naar Microsoft; bij de lokale engine blijft alles op je computer. Zie de privacyverklaring."
+  },
+  "privacy_policy": {
+    "en-US": "TTS LNX Browser reads web pages aloud. To do so, the extension sends the text of the page being read to a local helper on your own computer (http://127.0.0.1:5020). What happens to that text next depends on the engine you choose:\n\n- Cloud (Edge TTS, default): the helper forwards the text to Microsoft's speech service to synthesize audio. Microsoft therefore receives the text of the pages you have read aloud. Nothing else is sent: no browsing history, no identity, no location.\n- Local (Piper): all processing happens on your own computer. No text leaves your device.\n\nThe extension itself collects or stores no personal data, contains no analytics or tracking, and the developer receives nothing about your usage. Your settings (speed, voice, engine) stay in Firefox on your own computer.\n\nBoth the helper and the extension are open source; the source code shows exactly what is sent.",
+    "nl": "TTS LNX Browser leest webpagina's voor. Daarvoor stuurt de extensie tekst van de pagina die je voorleest naar een lokale helper op je eigen computer (http://127.0.0.1:5020). Wat daarna met die tekst gebeurt, hangt af van de engine die je kiest:\n\n- Cloud (Edge TTS, standaard): de helper stuurt de voor te lezen tekst naar de spraakdienst van Microsoft om er audio van te maken. Microsoft ontvangt dus de tekst van de pagina's die je laat voorlezen. Er worden geen andere gegevens verstuurd: geen surfgedrag, geen identiteit, geen locatie.\n- Lokaal (Piper): alle verwerking gebeurt op je eigen computer. Er verlaat geen tekst je apparaat.\n\nDe extensie verzamelt of bewaart zelf geen persoonsgegevens, bevat geen analyse- of trackingcode, en de ontwikkelaar ontvangt niets van je gebruik. Je instellingen (snelheid, stemkeuze, engine-keuze) blijven in Firefox op je eigen computer.\n\nDe helper en de extensie zijn open source; je kunt in de broncode nalezen wat er precies wordt verstuurd."
+  },
+  "categories": { "firefox": ["other"] },
+  "tags": []
+}
