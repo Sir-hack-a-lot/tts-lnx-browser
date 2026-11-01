@@ -143,3 +143,46 @@ def test_ensure_voice_slaat_download_over_als_bestanden_er_zijn(monkeypatch, tmp
 
     pad = piper_engine.ensure_voice("nl_NL-mls-medium")
     assert pad.read_bytes() == b"al-aanwezig"
+
+
+def test_ensure_voice_kopieert_uit_bundle_in_appimage(monkeypatch, tmp_path):
+    # AppImage-modus: meegepakte stemmen worden gekopieerd, nooit gedownload.
+    bundle = tmp_path / "bundle"
+    doel = tmp_path / "voices"
+    bundle.mkdir()
+    (bundle / "nl_NL-mls-medium.onnx").write_bytes(b"gebundeld-model")
+    (bundle / "nl_NL-mls-medium.onnx.json").write_bytes(b"{}")
+
+    def mag_niet_gebeuren(url):  # pragma: no cover - bewakingsfunctie
+        raise AssertionError("download ondanks gebundelde stem")
+
+    monkeypatch.setattr(piper_engine, "VOICE_DIR", doel)
+    monkeypatch.setattr(piper_engine, "_BUNDLED_VOICE_DIR", bundle)
+    monkeypatch.setattr(piper_engine, "_fetch", mag_niet_gebeuren)
+
+    pad = piper_engine.ensure_voice("nl_NL-mls-medium")
+    assert pad == doel / "nl_NL-mls-medium.onnx"
+    assert pad.read_bytes() == b"gebundeld-model"
+    assert (doel / "nl_NL-mls-medium.onnx.json").read_bytes() == b"{}"
+
+
+def test_ensure_voice_downloadt_wat_niet_in_bundle_zit(monkeypatch, tmp_path):
+    # Alleen de .onnx is gebundeld; de ontbrekende .json wordt wél gedownload.
+    bundle = tmp_path / "bundle"
+    doel = tmp_path / "voices"
+    bundle.mkdir()
+    (bundle / "nl_NL-mls-medium.onnx").write_bytes(b"gebundeld-model")
+    opgehaald = []
+
+    def fake_fetch(url):
+        opgehaald.append(url)
+        return b"{}"
+
+    monkeypatch.setattr(piper_engine, "VOICE_DIR", doel)
+    monkeypatch.setattr(piper_engine, "_BUNDLED_VOICE_DIR", bundle)
+    monkeypatch.setattr(piper_engine, "_fetch", fake_fetch)
+
+    pad = piper_engine.ensure_voice("nl_NL-mls-medium")
+    assert pad.read_bytes() == b"gebundeld-model"
+    assert len(opgehaald) == 1
+    assert opgehaald[0].endswith(".onnx.json")

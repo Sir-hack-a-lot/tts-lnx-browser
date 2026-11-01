@@ -11,8 +11,9 @@ Fase 3: de extensie praat via HTTP met een lokale helper
 voor via een eigen pdf.js-viewer:
 
 - **edge** — proxy naar Edge TTS (Microsoft, cloud): mooiste stemmen en
-  highlighting op woordniveau.
-- **piper** — volledig lokaal en offline: highlighting op zinsniveau.
+  echte woordtiming.
+- **piper** — volledig lokaal en offline: woordtiming wordt geschat
+  (proportioneel), dus highlight op woordniveau is daar minder strak.
 
 Zie `docs/superpowers/specs/` voor de ontwerpdocumenten.
 
@@ -20,7 +21,17 @@ Zie `docs/superpowers/specs/` voor de ontwerpdocumenten.
 
 De extensie heeft de helper nodig; zonder helper werkt voorlezen niet.
 
-1. Clone de repo en installeer en start de helper (zie ook `helper/README.md`):
+1. Installeer en start de helper — kies één van beide (zie ook
+   `helper/README.md`):
+
+   **AppImage** (geen Python nodig; bevat de piper-engine én de Nederlandse
+   stem, dus werkt ook offline):
+
+       # Download tts-lnx-helper-x86_64.AppImage uit de GitHub Releases
+       chmod +x tts-lnx-helper-x86_64.AppImage
+       ./tts-lnx-helper-x86_64.AppImage
+
+   **pipx** (vanuit bron):
 
        git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
        cd tts-lnx-browser
@@ -94,8 +105,8 @@ Helper ontwikkelen: zie `helper/README.md` (tests:
 
 - De Edge TTS API is onofficieel; bij wijzigingen kan cloud-voorlezen
   tijdelijk stuk zijn (de piper-engine maakt hier onafhankelijk van).
-- Woord-niveau highlighting werkt alleen met de edge-engine (Piper levert
-  geen woordtiming; highlighting blijft dan op zinsniveau).
+- Woord-highlighting met de piper-engine is een schatting en kan iets
+  voor- of achterlopen op de audio.
 - Snelheid wijzigen geldt vanaf de volgende zin.
 - Klik-om-te-seeken springt naar de eerste zin van de aangeklikte alinea.
 - PDF's zonder tekstlaag (gescande documenten) kunnen niet worden

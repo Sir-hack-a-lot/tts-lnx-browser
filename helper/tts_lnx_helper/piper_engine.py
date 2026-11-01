@@ -15,6 +15,8 @@ VOICE_DIR is een module-constante maar wordt op aanroepmoment gelezen
 
 import io
 import re
+import shutil
+import sys
 import urllib.request
 import wave
 from pathlib import Path
@@ -22,6 +24,13 @@ from pathlib import Path
 VOICE_DIR = Path.home() / ".local" / "share" / "tts-lnx-helper" / "voices"
 
 DEFAULT_VOICES = {"nl": "nl_NL-mls-medium"}
+
+# Bij een AppImage/PyInstaller-build (sys.frozen) zijn stemmen meegepakkt in
+# de bundle: die worden naar VOICE_DIR gekopieerd in plaats van gedownload,
+# zodat de lokale engine out-of-the-box offline werkt.
+_BUNDLED_VOICE_DIR = (
+    Path(sys._MEIPASS) / "voices" if getattr(sys, "frozen", False) else None
+)
 
 # Download-basis: https://huggingface.co/rhasspy/piper-voices/resolve/main/
 _HF_BASE = "https://huggingface.co/rhasspy/piper-voices/resolve/main"
@@ -93,17 +102,30 @@ def _sla_atomisch_op(pad, data):
     tmp.rename(pad)
 
 
+def _bundled_voice_file(naam):
+    """Pad naar een in de AppImage meegepakte stemfile, of None."""
+    if _BUNDLED_VOICE_DIR is None:
+        return None
+    pad = _BUNDLED_VOICE_DIR / naam
+    return pad if pad.exists() else None
+
+
 def ensure_voice(voice_id):
     """Zorg dat `<voice_id>.onnx` + `.onnx.json` in VOICE_DIR staan en geef het
-    pad naar het .onnx-bestand terug. Downloadt alleen wat ontbreekt."""
+    pad naar het .onnx-bestand terug. Downloadt alleen wat ontbreekt; in een
+    AppImage-build wordt een meegepakte stem gekopieerd i.p.v. gedownload."""
     VOICE_DIR.mkdir(parents=True, exist_ok=True)
     onnx_pad = VOICE_DIR / f"{voice_id}.onnx"
     json_pad = VOICE_DIR / f"{voice_id}.onnx.json"
     basis = f"{_HF_BASE}/{_voice_relpad(voice_id)}"
-    if not onnx_pad.exists():
-        _sla_atomisch_op(onnx_pad, _fetch(f"{basis}.onnx"))
-    if not json_pad.exists():
-        _sla_atomisch_op(json_pad, _fetch(f"{basis}.onnx.json"))
+    for pad, url in ((onnx_pad, f"{basis}.onnx"), (json_pad, f"{basis}.onnx.json")):
+        if pad.exists():
+            continue
+        bundled = _bundled_voice_file(pad.name)
+        if bundled is not None:
+            shutil.copyfile(bundled, pad)
+        else:
+            _sla_atomisch_op(pad, _fetch(url))
     return onnx_pad
 
 
