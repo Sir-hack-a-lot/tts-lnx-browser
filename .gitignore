@@ -5,3 +5,7 @@ helper/.venv/
 helper/*.egg-info/
 __pycache__/
 *.pyc
+
+# build-artifacts
+helper/build/
+.claude/
