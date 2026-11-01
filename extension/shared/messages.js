@@ -5,6 +5,7 @@ export const MSG = {
   CONTROL: 'tts.control', // content → background: {action, value?}
   EVENT: 'tts.event',     // background → content: {event}
   READ_SELECTION: 'tts.read-selection', // background → content: contextmenu op selectie
+  VIEWER_HELLO: 'tts.viewer-hello',     // viewer → background: registreer tab-id
 };
 
 export const CONTROL = {

@@ -70,6 +70,27 @@
     "description": "Notice shown when playback fails; $1 is the error message."
   },
 
+  "viewerLoading": {
+    "message": "Loading PDF…",
+    "description": "Status text in the PDF viewer while the document loads."
+  },
+  "viewerLoadingPage": {
+    "message": "Loading PDF… page $1 of $2",
+    "description": "Status text in the PDF viewer while pages render; $1 is the current page, $2 the total."
+  },
+  "viewerLoadFailed": {
+    "message": "Could not load the PDF: $1",
+    "description": "Status text in the PDF viewer when loading fails; $1 is the error message."
+  },
+  "viewerNoText": {
+    "message": "No text found in this PDF (scanned document?).",
+    "description": "Status text when the PDF has no text layer (OCR is not supported)."
+  },
+  "viewerNoSrc": {
+    "message": "No PDF specified.",
+    "description": "Status text when the viewer is opened without a src parameter."
+  },
+
   "optionsTitle": {
     "message": "TTS settings",
     "description": "Title of the options page."

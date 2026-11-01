@@ -14,7 +14,11 @@ function makeBrowser() {
   };
   b.browserAction = { onClicked: { addListener: () => {} } };
   b.commands = { onCommand: { addListener: () => {} } };
-  b.runtime = { onMessage: { addListener: () => {} } };
+  b.runtime = {
+    getURL: (p) => `moz-extension://abc/${p}`,
+    sendMessage: () => Promise.resolve(),
+    onMessage: { addListener: () => {} },
+  };
   b.i18n = { getMessage: (key) => `t:${key}` };
   b.contextMenus = {
     create: (opts) => b.created.push(opts),

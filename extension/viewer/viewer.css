@@ -1,0 +1,49 @@
+body {
+  margin: 0;
+  background: #525659;
+  font-family: system-ui, sans-serif;
+}
+#pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 8px 96px; /* ruimte onderaan voor de playerbar */
+}
+.page {
+  position: relative;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .5);
+}
+.page canvas {
+  display: block;
+}
+/* pdf.js-tekstlaag (subset van pdf.js' eigen text_layer.css). De directe
+   kind-selector is bewust: onze highlight-spans nesten ín de pdf-spans en
+   mogen deze positioneringsregels niet overnemen. */
+.textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+}
+.textLayer > span {
+  color: transparent;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0 0;
+}
+.status {
+  color: #fff;
+  text-align: center;
+  padding: 40px 16px;
+  font-size: 16px;
+}
+.status:empty {
+  display: none;
+}

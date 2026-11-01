@@ -70,6 +70,27 @@
     "description": "Melding als het voorlezen mislukt; $1 is de foutmelding."
   },
 
+  "viewerLoading": {
+    "message": "PDF laden…",
+    "description": "Statustekst in de PDF-viewer tijdens het laden van het document."
+  },
+  "viewerLoadingPage": {
+    "message": "PDF laden… pagina $1 van $2",
+    "description": "Statustekst in de PDF-viewer tijdens het renderen; $1 is de huidige pagina, $2 het totaal."
+  },
+  "viewerLoadFailed": {
+    "message": "PDF laden mislukt: $1",
+    "description": "Statustekst in de PDF-viewer als het laden mislukt; $1 is de foutmelding."
+  },
+  "viewerNoText": {
+    "message": "Geen tekst gevonden in deze PDF (gescand document?).",
+    "description": "Statustekst als de PDF geen tekstlaag heeft (OCR wordt niet ondersteund)."
+  },
+  "viewerNoSrc": {
+    "message": "Geen PDF opgegeven.",
+    "description": "Statustekst als de viewer zonder src-parameter geopend wordt."
+  },
+
   "optionsTitle": {
     "message": "TTS-instellingen",
     "description": "Titel van de optiepagina."

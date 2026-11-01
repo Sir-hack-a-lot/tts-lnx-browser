@@ -42,7 +42,11 @@ function makeBrowser({ storageDelay = false, stored = {} } = {}) {
   };
   b.browserAction = { onClicked: { addListener: () => {} } };
   b.commands = { onCommand: { addListener: () => {} } };
-  b.runtime = { onMessage: { addListener: (fn) => { b.onMessage = fn; } } };
+  b.runtime = {
+    getURL: (p) => `moz-extension://abc/${p}`,
+    sendMessage: () => Promise.resolve(),
+    onMessage: { addListener: (fn) => { b.onMessage = fn; } },
+  };
   return b;
 }
 

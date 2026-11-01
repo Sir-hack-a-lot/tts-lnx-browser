@@ -9,6 +9,33 @@ import { createHelperEngine } from './engines/helper-engine.js';
 import { createRouter } from './engine-router.js';
 import { createAudioPlayer } from './audio-player.js';
 import { createPlayer } from './player.js';
+import { pdfRedirectUrl } from './pdf-redirect.js';
+
+// PDF-navigaties omleiden naar de eigen viewer: de ingebouwde
+// Firefox-PDF-viewer blokkeert content scripts, dus zonder deze redirect
+// zou een PDF nooit voorgelezen kunnen worden.
+const viewerBaseUrl = browser.runtime.getURL('viewer/viewer.html');
+browser.webRequest?.onHeadersReceived.addListener(
+  (details) => {
+    const redirectUrl = pdfRedirectUrl(details, viewerBaseUrl);
+    return redirectUrl ? { redirectUrl } : {};
+  },
+  { urls: ['http://*/*', 'https://*/*'], types: ['main_frame'] },
+  ['blocking', 'responseHeaders'],
+);
+
+// Extension-pagina's (de PDF-viewer) zijn geen content scripts:
+// tabs.sendMessage bereikt ze niet. Viewer-tabs registreren hun tab-id via
+// VIEWER_HELLO en krijgen berichten via runtime.sendMessage met toTab-filter.
+const viewerTabIds = new Set();
+
+function sendToTab(tabId, payload) {
+  if (viewerTabIds.has(tabId)) {
+    browser.runtime.sendMessage({ ...payload, toTab: tabId }).catch(() => {});
+  } else {
+    browser.tabs.sendMessage(tabId, payload).catch(() => {});
+  }
+}
 
 // De stem wordt per sessie vastgelegd via resolveVoice op de engine die
 // pickEngine koos. Bekende beperking: bij pref 'local-first' kan de engine
@@ -35,7 +62,7 @@ function ensurePlayer(router) {
     audio: createAudioPlayer(),
     onEvent: (event) => {
       if (activeTabId == null) return;
-      browser.tabs.sendMessage(activeTabId, { type: MSG.EVENT, event }).catch(() => {});
+      sendToTab(activeTabId, { type: MSG.EVENT, event });
     },
   });
   return player;
@@ -53,19 +80,16 @@ function endSession() {
 // Sluiten of wegnavigeren van de actieve tab stopt het voorlezen;
 // anders speelt de audio zonder playerbar door.
 browser.tabs.onRemoved.addListener((tabId) => {
+  viewerTabIds.delete(tabId);
   if (tabId === activeTabId) endSession();
 });
 browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (tabId === activeTabId && changeInfo.url) endSession();
 });
 
-// Werkbalkknop of Alt+R: content script beslist (start of stop).
+// Werkbalkknop of Alt+R: content script (of de viewer) beslist (start of stop).
 async function toggle(tab) {
-  try {
-    await browser.tabs.sendMessage(tab.id, { type: MSG.TOGGLE });
-  } catch {
-    // Pagina zonder content script (about:*, addons.mozilla.org) — negeren.
-  }
+  sendToTab(tab.id, { type: MSG.TOGGLE });
 }
 
 // Rechtermuisknop op een tekstselectie: lees alleen de selectie voor.
@@ -78,7 +102,7 @@ browser.contextMenus?.create({
 });
 browser.contextMenus?.onClicked.addListener((info, tab) => {
   if (info.menuItemId === MENU_ID && tab?.id != null) {
-    browser.tabs.sendMessage(tab.id, { type: MSG.READ_SELECTION }).catch(() => {});
+    sendToTab(tab.id, { type: MSG.READ_SELECTION });
   }
 });
 
@@ -90,11 +114,23 @@ browser.commands?.onCommand.addListener(async (command) => {
 });
 
 browser.runtime.onMessage.addListener((msg, sender) => {
-  if (msg.type === MSG.START && sender.tab) {
-    const tabId = sender.tab.id;
+  // De PDF-viewer registreert haar tab-id zodat berichten naar haar via
+  // runtime.sendMessage gerouteerd worden (tabs.sendMessage bereikt alleen
+  // content scripts). Alleen onze eigen viewer-pagina mag zich aanmelden.
+  if (msg.type === MSG.VIEWER_HELLO) {
+    if (msg.tabId != null && sender.url?.startsWith(viewerBaseUrl)) {
+      viewerTabIds.add(msg.tabId);
+    }
+    return false;
+  }
+  if (msg.type === MSG.START) {
+    // Content scripts herkennen we aan sender.tab; de viewer stuurt haar
+    // geregistreerde tab-id mee in het bericht.
+    const tabId = sender.tab?.id ?? (viewerTabIds.has(msg.tabId) ? msg.tabId : undefined);
+    if (tabId == null) return false;
     // Sessie-overname: de vorige actieve tab ruimt zijn playerbar en highlights op.
     if (activeTabId !== null && activeTabId !== tabId) {
-      browser.tabs.sendMessage(activeTabId, { type: MSG.EVENT, event: { type: 'taken-over' } }).catch(() => {});
+      sendToTab(activeTabId, { type: MSG.EVENT, event: { type: 'taken-over' } });
     }
     activeTabId = tabId;
     const token = ++sessionToken;
@@ -110,19 +146,19 @@ browser.runtime.onMessage.addListener((msg, sender) => {
         ({ engine: engineNaam } = await (await routerPromise).pickEngine(msg.lang));
       } catch (err) {
         if (token !== sessionToken) return;
-        browser.tabs.sendMessage(tabId, {
+        sendToTab(tabId, {
           type: MSG.EVENT,
           event: { type: 'error', message: String(err?.message || err) },
-        }).catch(() => {});
+        });
         return;
       }
       if (token !== sessionToken) return;
       // Laat de playerbar de ingestelde snelheid en de gekozen engine tonen
       // vóór de eerste player-event (init = rate + engine-indicator).
-      browser.tabs.sendMessage(tabId, {
+      sendToTab(tabId, {
         type: MSG.EVENT,
         event: { type: 'init', rate: s.rate, engine: engineNaam },
-      }).catch(() => {});
+      });
       ensurePlayer(await routerPromise).start({
         sentences: msg.sentences,
         voice: resolveVoice(msg.lang, s.voiceOverrides, engineNaam),
@@ -132,8 +168,11 @@ browser.runtime.onMessage.addListener((msg, sender) => {
     return false;
   }
   // CONTROL is tab-gebaseerd: alleen de eigenaar van de sessie stuurt de player;
-  // verlate berichten van een overgenomen tab worden genegeerd.
-  if (msg.type === MSG.CONTROL && sender.tab && sender.tab.id === activeTabId) {
+  // verlate berichten van een overgenomen tab worden genegeerd. De viewer
+  // (geen sender.tab) stuurt haar geregistreerde tab-id mee.
+  if (msg.type === MSG.CONTROL) {
+    const senderTabId = sender.tab?.id ?? (viewerTabIds.has(msg.tabId) ? msg.tabId : undefined);
+    if (senderTabId == null || senderTabId !== activeTabId) return false;
     const { action, value } = msg;
     // STOP geldt ook zonder player: hij breekt een lopende START af.
     if (action === CONTROL.STOP) { endSession(); return false; }
