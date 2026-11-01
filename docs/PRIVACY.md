@@ -34,7 +34,7 @@ engine you choose:
 
 - **Cloud (Edge TTS, default):** the helper forwards the text to **Microsoft**'s
   speech service to synthesize audio. Microsoft therefore receives the text of
-  the pages you have read aloud. Nothing else is sent: no browsing history, no
+  the pages and PDFs you have read aloud. Nothing else is sent: no browsing history, no
   identity, no location.
 - **Local (Piper):** all processing happens on your own computer. No text
   leaves your device.
