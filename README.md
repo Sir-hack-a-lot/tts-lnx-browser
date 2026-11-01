@@ -6,15 +6,15 @@ voor Linux.
 
 ## Status
 
-Fase 2: de extensie praat via HTTP met een lokale helper
-(`tts-lnx-helper`, op 127.0.0.1:5020) met twee engines:
+Fase 3: de extensie praat via HTTP met een lokale helper
+(`tts-lnx-helper`, op 127.0.0.1:5020) met twee engines, en leest ook PDF's
+voor via een eigen pdf.js-viewer:
 
 - **edge** — proxy naar Edge TTS (Microsoft, cloud): mooiste stemmen en
   highlighting op woordniveau.
 - **piper** — volledig lokaal en offline: highlighting op zinsniveau.
 
-PDF-ondersteuning (fase 3) volgt; zie
-`docs/superpowers/specs/2026-10-22-firefox-tts-extensie-design.md`.
+Zie `docs/superpowers/specs/` voor de ontwerpdocumenten.
 
 ## Installatie
 
@@ -66,6 +66,12 @@ Helper ontwikkelen: zie `helper/README.md` (tests:
 - De actieve zin licht op en de pagina scrollt mee; met de edge-engine licht
   ook het actieve woord op.
 - Klik op een alinea om vanaf die plek voor te lezen.
+- Selecteer tekst en kies in het rechtermuismenu **"Lees selectie voor"** om
+  alleen die selectie te horen.
+- **PDF's** openen automatisch in de eigen viewer (pdf.js) zodat ze
+  voorgelezen kunnen worden; dezelfde bediening, markering en
+  selectie-voorlezing gelden daar ook. PDF-downloads (bijlagen) blijven
+  gewoon downloaden.
 - Instellingen (about:addons → TTS LNX Browser → Voorkeuren): standaard-
   snelheid, stem per taal (Nederlands, Engels, Duits, Frans, Spaans) en
   engine-keuze:
@@ -92,7 +98,10 @@ Helper ontwikkelen: zie `helper/README.md` (tests:
   geen woordtiming; highlighting blijft dan op zinsniveau).
 - Snelheid wijzigen geldt vanaf de volgende zin.
 - Klik-om-te-seeken springt naar de eerste zin van de aangeklikte alinea.
-- Geen PDF-ondersteuning (fase 3).
+- PDF's zonder tekstlaag (gescande documenten) kunnen niet worden
+  voorgelezen; OCR zit niet in de extensie. `file://`-PDF's worden niet
+  afgevangen.
+- De PDF-viewer bundelt pdf.js (Apache-2.0).
 
 ## Licentie
 

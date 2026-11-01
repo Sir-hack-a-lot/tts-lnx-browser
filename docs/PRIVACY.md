@@ -5,14 +5,14 @@ voor de vermelding op addons.mozilla.org (AMO)._
 
 ## Nederlands
 
-TTS LNX Browser leest webpagina's voor. Daarvoor stuurt de extensie tekst van
-de pagina die je voorleest naar een **lokale helper** op je eigen computer
+TTS LNX Browser leest webpagina's en PDF's voor. Daarvoor stuurt de extensie
+tekst van de pagina of PDF die je voorleest naar een **lokale helper** op je eigen computer
 (`http://127.0.0.1:5020`). Wat daarna met die tekst gebeurt, hangt af van de
 engine die je kiest:
 
 - **Cloud (Edge TTS, standaard):** de helper stuurt de voor te lezen tekst
   naar de spraakdienst van **Microsoft** om er audio van te maken. Microsoft
-  ontvangt dus de tekst van de pagina's die je laat voorlezen. Er worden geen
+  ontvangt dus de tekst van de pagina's en PDF's die je laat voorlezen. Er worden geen
   andere gegevens verstuurd: geen surfgedrag, geen identiteit, geen locatie.
 - **Lokaal (Piper):** alle verwerking gebeurt op je eigen computer. Er verlaat
   geen tekst je apparaat.
@@ -27,8 +27,8 @@ er precies wordt verstuurd.
 
 ## English
 
-TTS LNX Browser reads web pages aloud. To do so, the extension sends the text
-of the page being read to a **local helper** on your own computer
+TTS LNX Browser reads web pages and PDFs aloud. To do so, the extension sends
+the text of the page or PDF being read to a **local helper** on your own computer
 (`http://127.0.0.1:5020`). What happens to that text next depends on the
 engine you choose:
 
