@@ -33,17 +33,19 @@ De extensie heeft de helper nodig; zonder helper werkt voorlezen niet.
        chmod +x tts-lnx-helper-x86_64.AppImage
        ./tts-lnx-helper-x86_64.AppImage
 
-   **pipx** (vanuit bron):
+   **pipx:**
+
+       pipx install 'tts-lnx-helper[piper]'
+       tts-lnx-helper          # draait op 127.0.0.1:5020
+
+   Of vanuit een bron-checkout:
 
        git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
        cd tts-lnx-browser
        pipx install './helper[piper]'
-       tts-lnx-helper          # draait op 127.0.0.1:5020
 
    De extra `[piper]` installeert de lokale piper-engine mee; zonder die
    extra werkt alleen de cloud-engine (edge).
-
-   Het pakket staat (nog) niet op PyPI; publicatie kan later volgen.
 
 2. Optioneel automatisch starten bij inloggen:
 
