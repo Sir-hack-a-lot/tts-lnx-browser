@@ -1,119 +1,117 @@
 # TTS LNX Browser
 
-Firefox-extensie die webpagina's voorleest met natuurlijke neurale stemmen —
-de "Read Aloud"-feature die Edge/Chrome op Windows en macOS hebben, maar dan
-voor Linux.
+_[Nederlandse versie](README.nl.md)_
 
-## Status
+A Firefox extension for Linux that reads web pages and PDFs aloud with
+natural-sounding neural voices — the "Read Aloud" feature Edge and Chrome
+have on Windows and macOS, but for Linux.
 
-Fase 3: de extensie praat via HTTP met een lokale helper
-(`tts-lnx-helper`, op 127.0.0.1:5020) met twee engines, en leest ook PDF's
-voor via een eigen pdf.js-viewer:
+## How it works
 
-- **edge** — proxy naar Edge TTS (Microsoft, cloud): mooiste stemmen en
-  echte woordtiming.
-- **piper** — volledig lokaal en offline: woordtiming wordt geschat
-  (proportioneel), dus highlight op woordniveau is daar minder strak.
+The extension talks over HTTP to a small local helper (`tts-lnx-helper`, on
+127.0.0.1:5020) with two engines, and renders PDFs in its own pdf.js viewer
+so they can be read aloud too:
 
-Zie `docs/superpowers/specs/` voor de ontwerpdocumenten.
+- **edge** — proxy to Edge TTS (Microsoft, cloud): best-quality voices and
+  real word timing.
+- **piper** — fully local and offline: word timing is estimated
+  (proportionally), so word-level highlighting is slightly less tight.
 
-## Installatie
+See `docs/superpowers/specs/` for the design documents.
 
-De extensie heeft de helper nodig; zonder helper werkt voorlezen niet.
+## Installation
 
-1. Installeer en start de helper — kies één van beide (zie ook
+The extension needs the helper; reading aloud does not work without it.
+
+1. Install and start the helper — pick one of the two options (see also
    `helper/README.md`):
 
-   **AppImage** (geen Python nodig; bevat de piper-engine én de Nederlandse
-   stem, dus werkt ook offline):
+   **AppImage** (no Python needed; includes the piper engine *and* the Dutch
+   voice, so it works offline out of the box):
 
-       # Download tts-lnx-helper-x86_64.AppImage uit de GitHub Releases
+       # Download tts-lnx-helper-x86_64.AppImage from GitHub Releases
        chmod +x tts-lnx-helper-x86_64.AppImage
        ./tts-lnx-helper-x86_64.AppImage
 
-   **pipx** (vanuit bron):
+   **pipx:**
 
-       git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
-       cd tts-lnx-browser
-       pipx install './helper[piper]'
-       tts-lnx-helper          # draait op 127.0.0.1:5020
+       pipx install 'tts-lnx-helper[piper]'
+       tts-lnx-helper          # runs on 127.0.0.1:5020
 
-   De extra `[piper]` installeert de lokale piper-engine mee; zonder die
-   extra werkt alleen de cloud-engine (edge).
+   The `[piper]` extra installs the local piper engine; without it only the
+   cloud engine (edge) works.
 
-   Het pakket staat (nog) niet op PyPI; publicatie kan later volgen.
-
-2. Optioneel automatisch starten bij inloggen:
+2. Optionally start the helper automatically at login (pipx install):
 
        tts-lnx-helper-autostart install
 
-3. Installeer de extensie in Firefox: bouw met `npm run package` en laad
-   `web-ext-artifacts/tts_lnx_browser-<versie>.zip`, of draai tijdelijk met
-   `npm start`.
+3. Install the extension in Firefox from
+   [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/tts-lnx-browser/)
+   (once listed), or build from source with `npm run package` and load
+   `web-ext-artifacts/tts_lnx_browser-<version>.zip` via about:addons, or run
+   temporarily with `npm start`.
 
-Bij eerste gebruik van de piper-engine wordt de Nederlandse stem
-(nl_NL-mls-medium) gedownload naar `~/.local/share/tts-lnx-helper/voices/`.
+On first use of the piper engine, the Dutch voice (nl_NL-mls-medium) is
+downloaded to `~/.local/share/tts-lnx-helper/voices/`.
 
-## Ontwikkelen
+## Development
 
     npm install
-    npm test          # unit- en integratietests (Vitest)
-    npm run build     # bundelt naar dist/
+    npm test          # unit and integration tests (Vitest)
+    npm run build     # bundles to dist/
     npm run lint      # web-ext lint
-    npm start         # start Firefox met de extensie geladen
-    npm run package   # bouwt web-ext-artifacts/tts_lnx_browser-<versie>.zip
+    npm start         # starts Firefox with the extension loaded
+    npm run package   # builds web-ext-artifacts/tts_lnx_browser-<version>.zip
 
-`npm start` gebruikt `scripts/run-dev.sh`: die zet TMPDIR onder `$HOME` zodat
-ook snap-Firefox het tijdelijke web-ext-profiel kan lezen (anders:
+`npm start` uses `scripts/run-dev.sh`, which sets TMPDIR under `$HOME` so
+that snap Firefox can read the temporary web-ext profile (otherwise:
 "Your Firefox profile cannot be loaded").
 
-Helper ontwikkelen: zie `helper/README.md` (tests:
+Helper development: see `helper/README.md` (tests:
 `cd helper && .venv/bin/python -m pytest tests/ -q`).
 
-## Gebruik
+## Usage
 
-- Klik op het luidspreker-icoon in de werkbalk, of druk op **Alt+R**.
-- De playerbar onderin: vorige/volgende zin, pauze, stop, snelheid (0,5×–2×).
-- De actieve zin licht op en de pagina scrollt mee; met de edge-engine licht
-  ook het actieve woord op.
-- Klik op een alinea om vanaf die plek voor te lezen.
-- Selecteer tekst en kies in het rechtermuismenu **"Lees selectie voor"** om
-  alleen die selectie te horen.
-- **PDF's** openen automatisch in de eigen viewer (pdf.js) zodat ze
-  voorgelezen kunnen worden; dezelfde bediening, markering en
-  selectie-voorlezing gelden daar ook. PDF-downloads (bijlagen) blijven
-  gewoon downloaden.
-- Instellingen (about:addons → TTS LNX Browser → Voorkeuren): standaard-
-  snelheid, stem per taal (Nederlands, Engels, Duits, Frans, Spaans) en
-  engine-keuze:
-  - **Cloud (Edge TTS — mooiste stemmen)**
-  - **Lokaal (Piper — offline, eigen stemmen)**
-  - **Lokaal eerst, cloud als reserve**
-- Draait de helper niet, dan toont de playerbar een installatie-melding;
-  de extensie crasht niet en werkt weer zodra de helper start.
+- Click the speaker icon in the toolbar, or press **Alt+R**.
+- The player bar at the bottom: previous/next sentence, pause, stop, speed
+  (0.5×–2×).
+- The current sentence lights up and the page scrolls along; the current word
+  is highlighted as well.
+- Click a paragraph to start reading from that point.
+- Select text and choose **"Read selection aloud"** from the right-click menu
+  to hear only that selection.
+- **PDFs** automatically open in the built-in viewer (pdf.js) so they can be
+  read aloud; the same controls, highlighting and selection reading apply
+  there. PDF downloads (attachments) are left alone.
+- Settings (about:addons → TTS LNX Browser → Preferences): default speed,
+  voice per language (Dutch, English, German, French, Spanish) and engine
+  choice:
+  - **Cloud (Edge TTS — best-quality voices)**
+  - **Local (Piper — offline, custom voices)**
+  - **Local first, cloud as fallback**
+- If the helper is not running, the player bar shows an installation notice;
+  the extension does not crash and works again as soon as the helper starts.
 
 ## Privacy
 
-- Engine **edge**: de paginatekst gaat via de lokale helper naar Microsoft
+- Engine **edge**: the page text goes via the local helper to Microsoft
   (Edge TTS).
-- Engine **piper**: volledig lokale verwerking, geen netwerkverkeer met
-  paginatekst.
-- De helper luistert alleen op 127.0.0.1, schrijft geen paginatekst naar
-  schijf en logt geen inhoud. De extensie verzamelt geen gegevens.
+- Engine **piper**: fully local processing, no network traffic with page text.
+- The helper listens only on 127.0.0.1, writes no page text to disk and logs
+  no content. The extension collects no data.
 
-## Bekende beperkingen
+## Known limitations
 
-- De Edge TTS API is onofficieel; bij wijzigingen kan cloud-voorlezen
-  tijdelijk stuk zijn (de piper-engine maakt hier onafhankelijk van).
-- Woord-highlighting met de piper-engine is een schatting en kan iets
-  voor- of achterlopen op de audio.
-- Snelheid wijzigen geldt vanaf de volgende zin.
-- Klik-om-te-seeken springt naar de eerste zin van de aangeklikte alinea.
-- PDF's zonder tekstlaag (gescande documenten) kunnen niet worden
-  voorgelezen; OCR zit niet in de extensie. `file://`-PDF's worden niet
-  afgevangen.
-- De PDF-viewer bundelt pdf.js (Apache-2.0).
+- The Edge TTS API is unofficial; if it changes, cloud reading may break
+  temporarily (the piper engine is independent of this).
+- Word highlighting with the piper engine is an estimate and may run slightly
+  ahead of or behind the audio.
+- Changing speed applies from the next sentence onwards.
+- Click-to-seek jumps to the first sentence of the clicked paragraph.
+- PDFs without a text layer (scanned documents) cannot be read aloud; OCR is
+  not included. `file://` PDFs are not intercepted.
+- The PDF viewer bundles pdf.js (Apache-2.0).
 
-## Licentie
+## License
 
-MPL-2.0, zie LICENSE.
+MPL-2.0, see LICENSE.

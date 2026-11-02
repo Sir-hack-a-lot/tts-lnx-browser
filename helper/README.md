@@ -1,49 +1,56 @@
 # tts-lnx-helper
 
-Lokale TTS-helper voor de TTS LNX Browser Firefox-extensie.
+_[Nederlandse versie](README.nl.md)_
 
-## Installatie
+Local TTS helper for the TTS LNX Browser Firefox extension.
 
-**Optie 1 — AppImage (geen Python nodig):**
+## Installation
 
-    # Download tts-lnx-helper-x86_64.AppImage uit de GitHub Releases
+**Option 1 — AppImage (no Python needed):**
+
+    # Download tts-lnx-helper-x86_64.AppImage from GitHub Releases
     chmod +x tts-lnx-helper-x86_64.AppImage
-    ./tts-lnx-helper-x86_64.AppImage          # draait op 127.0.0.1:5020
+    ./tts-lnx-helper-x86_64.AppImage          # runs on 127.0.0.1:5020
 
-De AppImage bevat de piper-engine én de Nederlandse stem, dus de lokale
-engine werkt ook zonder internet. Bouwen vanuit bron:
+The AppImage contains the piper engine *and* the Dutch voice, so the local
+engine works offline out of the box. Build from source:
 
-    ./scripts/build-appimage.sh   # vereist python3-venv, curl en ImageMagick
+    ./scripts/build-appimage.sh   # requires python3-venv, curl and ImageMagick
 
-**Optie 2 — pipx:**
+**Option 2 — pipx:**
+
+    pipx install 'tts-lnx-helper[piper]'
+    tts-lnx-helper          # runs on 127.0.0.1:5020
+
+Or from a source checkout:
 
     git clone https://github.com/Sir-hack-a-lot/tts-lnx-browser.git
     cd tts-lnx-browser
     pipx install './helper[piper]'
-    tts-lnx-helper          # draaien op 127.0.0.1:5020
+    tts-lnx-helper
 
-De extra `[piper]` installeert de lokale piper-engine mee. Zonder die extra
-(`pipx install ./helper`) werkt alleen de cloud-engine (edge); een voorkeur
-voor "lokaal" mislukt dan met "piper niet beschikbaar".
+The `[piper]` extra installs the local piper engine. Without it
+(`pipx install tts-lnx-helper`) only the cloud engine (edge) works; a
+"local" preference then fails with "piper not available".
 
-Optioneel automatisch starten bij inloggen (pipx-installatie):
+Optionally start automatically at login (pipx install):
 
-    tts-lnx-helper-autostart install   # of: python -m tts_lnx_helper.autostart install
+    tts-lnx-helper-autostart install   # or: python -m tts_lnx_helper.autostart install
 
-Bij de AppImage maak je autostart zelf aan met een .desktop-entry in
-~/.config/autostart die naar het AppImage-pad verwijst.
+For the AppImage, create autostart yourself with a .desktop entry in
+~/.config/autostart pointing at the AppImage path.
 
 ## Engines
 
-- `edge` (standaard): proxy naar Edge TTS — mooiste stemmen, internet nodig,
-  paginatekst gaat naar Microsoft. Woord-timing komt van Edge zelf.
-- `piper`: volledig lokaal en offline. De Nederlandse stem
-  (nl_NL-mls-medium) wordt bij eerste gebruik gedownload naar
-  ~/.local/share/tts-lnx-helper/voices/ (in de AppImage is hij al meegepakt).
-  Piper levert geen woord-timestamps; de helper schat de woordtiming
-  proportioneel uit de tekst en de audioduur.
+- `edge` (default): proxy to Edge TTS — best-quality voices, internet
+  required, page text goes to Microsoft. Word timing comes from Edge itself.
+- `piper`: fully local and offline. The Dutch voice (nl_NL-mls-medium) is
+  downloaded on first use to ~/.local/share/tts-lnx-helper/voices/ (in the
+  AppImage it is already bundled). Piper provides no word timestamps; the
+  helper estimates word timing proportionally from the text and the audio
+  duration.
 
 ## Privacy
 
-De helper luistert alleen op 127.0.0.1 en schrijft geen paginatekst naar
-schijf. Logregels bevatten geen inhoud.
+The helper listens only on 127.0.0.1 and writes no page text to disk. Log
+lines contain no content.
